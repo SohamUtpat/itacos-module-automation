@@ -68,21 +68,16 @@ git clone https://github.com/SohamUtpat/itacos-module-automation.git
 cd itacos-module-automation
 ```
 
-### 2. Create and activate a virtual environment (recommended)
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
+### 2. Install dependencies
 
 ```powershell
 pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 4. Configure environment variables
+Optional: use a virtual environment (`python -m venv .venv` then activate it) if you want an isolated Python install. This project does not require one.
+
+### 3. Configure environment variables
 
 Create a `.env` file in the project root (do not commit this file):
 
