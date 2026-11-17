@@ -42,18 +42,18 @@ Playwright + Pytest UI automation for the Assist Me / Itacos UAT app, focused on
 │   └── test_office_branch_unit_e2e.py
 ├── helpers/            # Shared helpers (URLs, unique data, location)
 ├── test_data/          # JSON test data
-├── reports/            # HTML report, screenshots, traces (gitignored)
+├── reports/            # HTML report, screenshots, traces
 ├── conftest.py         # Auth fixtures, failure screenshots
 ├── pytest.ini          # Markers, report defaults
 ├── requirements.txt
-└── .env                # Local credentials (not committed)
+└── .env                # Local credentials
 ```
 
 ---
 
 ## Prerequisites
 
-- Python 3.10+ recommended
+- Python 3.10+
 - Git
 - Access to UAT with a Provider Office Admin account
 
@@ -75,11 +75,9 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-Optional: use a virtual environment (`python -m venv .venv` then activate it) if you want an isolated Python install. This project does not require one.
-
 ### 3. Configure environment variables
 
-Create a `.env` file in the project root (do not commit this file):
+Create a `.env` file in the project root:
 
 ```env
 BASE_URL=https://uat.assistme.me/login
@@ -87,8 +85,6 @@ LOGIN_EMAIL_OR_MOBILE=your_email@example.com
 LOGIN_MOBILE=your_mobile_number
 LOGIN_PASSWORD=your_password
 ```
-
-`.env` is already listed in `.gitignore`.
 
 ---
 
@@ -166,11 +162,3 @@ Full conventions: [APPROACH.md](APPROACH.md)
 | Branches | [BRANCHES_SCENARIOS.md](BRANCHES_SCENARIOS.md) |
 | Units | [UNITS_SCENARIOS.md](UNITS_SCENARIOS.md) |
 | Plan | [MODULES_AUTOMATION_PLAN.md](MODULES_AUTOMATION_PLAN.md) |
-
----
-
-## Notes
-
-- Role under test: **Provider Office Admin** only
-- Module dependency on UAT is typically: **Office → Branches → Units**
-- Do not commit `.env`, `__pycache__/`, `.pytest_cache/`, or `reports/`
