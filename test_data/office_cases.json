@@ -1,0 +1,74 @@
+{
+  "happy_required": {
+    "id": "TC-O01",
+    "company_name": "Auto service center",
+    "short_name": "ATO",
+    "mobile": "8767119282",
+    "email": "soham@gmail.com",
+    "location_query": "Katraj, Pune"
+  },
+  "happy_all_fields": {
+    "id": "TC-O02",
+    "company_name": "Auto service center",
+    "short_name": "ATO",
+    "mobile": "8767119282",
+    "email": "soham@gmail.com",
+    "landline": "21564376",
+    "comments": "Automation all-fields save",
+    "location_query": "Katraj, Pune"
+  },
+  "bank_details": {
+    "id": "TC-O08",
+    "account_number": "123456789012",
+    "iban_code": "SBIN0001234",
+    "branch": "Katraj Branch"
+  },
+  "updated_comments": {
+    "id": "TC-O07",
+    "comments": "Automation updated comments"
+  },
+  "negatives": [
+    {
+      "id": "TC-O03",
+      "title": "Empty company name",
+      "clear_field": "company_name",
+      "mark": "regression"
+    },
+    {
+      "id": "TC-O04",
+      "title": "Alphabets in mobile",
+      "mobile": "abcdefghij",
+      "mark": "regression"
+    },
+    {
+      "id": "TC-O05",
+      "title": "Invalid email format",
+      "email": "not-an-email",
+      "mark": "regression"
+    },
+    {
+      "id": "TC-O13",
+      "title": "Empty short name",
+      "clear_field": "short_name",
+      "mark": "regression"
+    },
+    {
+      "id": "TC-O14",
+      "title": "Empty email",
+      "clear_field": "email",
+      "mark": "regression"
+    },
+    {
+      "id": "TC-O15",
+      "title": "Empty mobile",
+      "clear_field": "mobile",
+      "mark": "regression"
+    },
+    {
+      "id": "TC-O16",
+      "title": "Invalid landline letters",
+      "landline": "abcdefgh",
+      "mark": "regression"
+    }
+  ]
+}

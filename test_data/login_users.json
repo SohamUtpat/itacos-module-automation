@@ -1,0 +1,121 @@
+[
+  {
+    "id": "TC-L01",
+    "email_or_mobile": "ENV",
+    "password": "ENV",
+    "expected": "success",
+    "mark": "smoke"
+  },
+  {
+    "id": "TC-L02",
+    "email_or_mobile": "ENV_MOBILE",
+    "password": "ENV",
+    "expected": "success",
+    "mark": "smoke"
+  },
+  {
+    "id": "TC-L03",
+    "email_or_mobile": "ENV",
+    "password": "ENV",
+    "expected": "masked",
+    "mark": "smoke"
+  },
+  {
+    "id": "TC-L04",
+    "email_or_mobile": "wrong.user@example.com",
+    "password": "ENV",
+    "expected": "error",
+    "error_message": "Invalid username or Password for wrong.user@example.com",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L05",
+    "email_or_mobile": "ENV",
+    "password": "WrongPassword123",
+    "expected": "error",
+    "error_message": "Invalid username or Password",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L06",
+    "email_or_mobile": "wrong.user@example.com",
+    "password": "WrongPassword123",
+    "expected": "error",
+    "error_message": "Invalid username or Password for wrong.user@example.com",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L07",
+    "email_or_mobile": "9999999999",
+    "password": "ENV",
+    "expected": "error",
+    "error_message": "Invalid username or Password",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L08",
+    "email_or_mobile": "",
+    "password": "ENV",
+    "expected": "error",
+    "error_message": "Mobile or email id is required",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L09",
+    "email_or_mobile": "ENV",
+    "password": "",
+    "expected": "error",
+    "error_message": "Password is required.",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L10",
+    "email_or_mobile": "",
+    "password": "",
+    "expected": "error",
+    "error_messages": [
+      "Mobile or email id is required",
+      "Password is required."
+    ],
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L11",
+    "email_or_mobile": "ENV",
+    "password": "CASE",
+    "expected": "error",
+    "error_message": "Invalid username or Password",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L12",
+    "email_or_mobile": "CASE_EMAIL",
+    "password": "ENV",
+    "expected": "success",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L13",
+    "email_or_mobile": "SPACES_EMAIL",
+    "password": "ENV",
+    "expected": "success",
+    "mark": "regression",
+    "xfail": "Standard: trim email spaces. UAT currently does not — remove xfail when fixed."
+  },
+  {
+    "id": "TC-L14",
+    "email_or_mobile": "ENV",
+    "password": "SPACES_PASSWORD",
+    "expected": "error",
+    "error_message": "Invalid username or Password",
+    "mark": "regression"
+  },
+  {
+    "id": "TC-L15",
+    "email_or_mobile": "' OR '1'='1",
+    "password": "test",
+    "expected": "error",
+    "error_message": "Invalid username or Password for ' OR '1'='1",
+    "mark": "regression"
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "default_branch_code": "SP-B008",
+  "password": "Unit@12345",
+  "negatives": [
+    {
+      "id": "TC-U03",
+      "title": "Empty required fields",
+      "first_name": "",
+      "email": "",
+      "phone": "",
+      "password": "",
+      "confirm_password": "",
+      "select_branch": false,
+      "mark": "regression"
+    },
+    {
+      "id": "TC-U04",
+      "title": "Alphabets in phone number",
+      "first_name": "Rahul",
+      "email": "unit.phone@example.com",
+      "phone": "abcdefghij",
+      "password": "Unit@12345",
+      "confirm_password": "Unit@12345",
+      "select_branch": true,
+      "mark": "regression"
+    },
+    {
+      "id": "TC-U05",
+      "title": "Invalid email format",
+      "first_name": "Priya",
+      "email": "not-an-email",
+      "phone": "9876501234",
+      "password": "Unit@12345",
+      "confirm_password": "Unit@12345",
+      "select_branch": true,
+      "mark": "regression"
+    },
+    {
+      "id": "TC-U06",
+      "title": "Password mismatch",
+      "first_name": "Amit",
+      "email": "unit.mismatch@example.com",
+      "phone": "9876501235",
+      "password": "Unit@12345",
+      "confirm_password": "Different@123",
+      "select_branch": true,
+      "mark": "regression"
+    }
+  ]
+}

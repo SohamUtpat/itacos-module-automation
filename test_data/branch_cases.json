@@ -1,0 +1,29 @@
+{
+  "location_query": "Katraj, Pune",
+  "negatives": [
+    {
+      "id": "TC-B03",
+      "title": "Empty mobile and email",
+      "mobile": "",
+      "email": "",
+      "pick_location": false,
+      "mark": "regression"
+    },
+    {
+      "id": "TC-B04",
+      "title": "Alphabets in mobile",
+      "mobile": "abcdefghij",
+      "email": "branch.neg@example.com",
+      "pick_location": true,
+      "mark": "regression"
+    },
+    {
+      "id": "TC-B05",
+      "title": "Invalid email format",
+      "mobile": "9876543210",
+      "email": "bad-email",
+      "pick_location": true,
+      "mark": "regression"
+    }
+  ]
+}
