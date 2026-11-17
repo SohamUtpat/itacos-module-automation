@@ -2,4 +2,5 @@ pytest
 playwright
 pytest-playwright
 pytest-base-url
+pytest-html
 python-dotenv
