@@ -17,3 +17,6 @@ class Sidebar:
 
     def go_units(self):
         self.page.get_by_role("button", name="Units").click()
+
+    def go_workshops(self):
+        self.page.get_by_role("button", name="Workshops", exact=True).click()
