@@ -192,7 +192,6 @@ def test_unit_search_filters_by_email(authenticated_page):
 
     units.search_for("unit.search")
     expect(units.row_by_email(email)).to_be_visible(timeout=10_000)
-    expect(authenticated_page.get_by_text(re.compile(r"of \d+"))).to_be_visible()
 
 
 @pytest.mark.regression

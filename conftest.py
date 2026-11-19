@@ -35,9 +35,22 @@ def login_page(page: Page):
         logout.click()
 
 
-@pytest.fixture
-def authenticated_page(page: Page):
-    """Login as Provider Office Admin and land on the dashboard."""
+# Post-login URL for the module-scoped page, so later tests can reload the
+# shell without sending the browser back through the login form.
+_session_home_urls: dict[int, str] = {}
+
+
+@pytest.fixture(scope="module")
+def _module_context(browser, browser_context_args):
+    """One browser context per test file. Login tests keep the function-scoped page."""
+    context = browser.new_context(**browser_context_args)
+    yield context
+    context.close()
+
+
+@pytest.fixture(scope="module")
+def authenticated_page(_module_context):
+    """Log in once per test file and log out after that file's last test."""
     base_url = os.getenv("BASE_URL")
     email = os.getenv("LOGIN_EMAIL_OR_MOBILE")
     password = os.getenv("LOGIN_PASSWORD")
@@ -47,17 +60,65 @@ def authenticated_page(page: Page):
     if not email or not password:
         pytest.fail("LOGIN_EMAIL_OR_MOBILE and LOGIN_PASSWORD must be set in .env")
 
+    page = _module_context.new_page()
     page.goto(base_url)
     LoginPage(page).login(email, password)
     page.get_by_role("button", name="Provider Office Admin").wait_for(
         state="visible", timeout=20_000
     )
+    _session_home_urls[id(page)] = page.url
 
     yield page
 
-    logout = page.get_by_role("button", name="Logout")
-    if logout.is_visible():
-        logout.click()
+    try:
+        if page.is_closed():
+            return
+        home_url = _session_home_urls.get(id(page))
+        if home_url:
+            page.goto(home_url, wait_until="domcontentloaded")
+        logout = page.get_by_role("button", name="Logout")
+        if logout.is_visible():
+            logout.click()
+    finally:
+        _session_home_urls.pop(id(page), None)
+        if not page.is_closed():
+            page.close()
+
+
+@pytest.fixture(autouse=True)
+def _reset_shared_session(request):
+    """Reload the post-login shell before each authenticated test.
+
+    The page is shared for the whole file, so search text, map view, open
+    dialogs, and unsaved form values would otherwise leak into the next test.
+    Login cases do not request authenticated_page and keep a fresh page.
+    """
+    if "authenticated_page" not in request.fixturenames:
+        yield
+        return
+
+    page = request.getfixturevalue("authenticated_page")
+    _prepare_shared_page(page)
+    yield
+
+
+def _prepare_shared_page(page: Page) -> None:
+    if page.is_closed():
+        pytest.fail("Shared browser page was closed by an earlier test in this module")
+
+    home_url = _session_home_urls.get(id(page))
+    if not home_url:
+        return
+
+    try:
+        page.keyboard.press("Escape")
+    except Exception:
+        pass
+
+    page.goto(home_url, wait_until="domcontentloaded")
+    page.get_by_role("button", name="Provider Office Admin").wait_for(
+        state="visible", timeout=20_000
+    )
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
