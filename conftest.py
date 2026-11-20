@@ -19,20 +19,54 @@ def pytest_configure(config):
     SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
+@pytest.fixture(scope="module")
+def _login_browser_page(_module_context):
+    """One login window for the whole file. Closed after that file's last case."""
+    page = _module_context.new_page()
+    yield page
+    if not page.is_closed():
+        page.close()
+
+
 @pytest.fixture
-def login_page(page: Page):
+def login_page(_login_browser_page: Page):
+    """Reload a logged-out login form in the shared window before each case.
+
+    A successful case leaves a session in this window. Reload alone would open
+    the signed-in app, so sign out first, then load the login address again.
+    That clears the fields and any error toast without closing the window.
+    """
     base_url = os.getenv("BASE_URL")
 
     if not base_url:
         pytest.fail("BASE_URL is missing in .env")
 
-    page.goto(base_url)
+    _prepare_login_form(_login_browser_page, base_url)
+    yield _login_browser_page
 
-    yield page
+
+def _prepare_login_form(page: Page, base_url: str) -> None:
+    if page.is_closed():
+        pytest.fail("Shared login page was closed by an earlier test in this module")
+
+    try:
+        page.keyboard.press("Escape")
+    except Exception:
+        pass
 
     logout = page.get_by_role("button", name="Logout")
     if logout.is_visible():
         logout.click()
+        # Logout asks for confirmation and stays on the signed-in page until Confirm.
+        page.get_by_role("button", name="Confirm").click()
+        page.get_by_role("heading", name="Welcome Back").wait_for(
+            state="visible", timeout=20_000
+        )
+
+    page.goto(base_url, wait_until="domcontentloaded")
+    page.get_by_role("heading", name="Welcome Back").wait_for(
+        state="visible", timeout=20_000
+    )
 
 
 # Post-login URL for the module-scoped page, so later tests can reload the
@@ -42,7 +76,7 @@ _session_home_urls: dict[int, str] = {}
 
 @pytest.fixture(scope="module")
 def _module_context(browser, browser_context_args):
-    """One browser context per test file. Login tests keep the function-scoped page."""
+    """One browser context per test file, shared by the login window and the signed-in page."""
     context = browser.new_context(**browser_context_args)
     yield context
     context.close()
@@ -91,7 +125,7 @@ def _reset_shared_session(request):
 
     The page is shared for the whole file, so search text, map view, open
     dialogs, and unsaved form values would otherwise leak into the next test.
-    Login cases do not request authenticated_page and keep a fresh page.
+    Login cases use login_page, which reloads the login form in its own window.
     """
     if "authenticated_page" not in request.fixturenames:
         yield

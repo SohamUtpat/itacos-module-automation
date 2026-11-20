@@ -12,7 +12,7 @@
 | Type | Count | IDs |
 |------|-------|-----|
 | Smoke | 1 | TC-U-SMOKE |
-| Happy / Positive | 10 | TC-U01 – TC-U02, TC-U07 – TC-U14 |
+| Happy / Positive | 11 | TC-U01 – TC-U02, TC-U07 – TC-U15 |
 | Negative | 7 | TC-U03 – TC-U06, TC-U16 – TC-U18 |
 | E2E happy path | 3 | TC-E2E-01 – TC-E2E-03 |
 
@@ -30,9 +30,10 @@
 
 | ID | Title | Steps | Expected |
 |----|--------|-------|----------|
-| TC-U01 | Create with required fields | First Name, Email, Country Code, Phone, Password, Confirm, Branch → Submit | List shows new email row |
-| TC-U02 | Create with all fields | Required + Last Name → Submit | Row visible |
-| TC-U07 | Create shows row details | Create unit → inspect row | Country / Status visible with email |
+| TC-U01 | Create with required fields | First Name, Email, Country Code, Phone, Password, Confirm, Branch → Submit → Back | Toast **user created successfully**. Other Details opens with Submit disabled. Back shows the new email row |
+| TC-U02 | Create with all fields | Required + Last Name → Submit → Back | Toast **user created successfully** and the row is visible |
+| TC-U07 | Create shows row details | Create unit → Back → inspect row | Toast **user created successfully**. Code is visible with the email |
+| TC-U15 | Update from Other Details | Create → set Language = English → Submit | Toast **ITACO User's Details are Updated Successfully**. Same email row is on the list |
 | TC-U08 | Edit unit | Create → Edit → change First Name → Submit | Updated name visible in grid |
 | TC-U09 | Delete unit | Create → Delete → Confirm | Row gone |
 | TC-U10 | Search by email | Create → Search email fragment | Matching row visible; count reduced |

@@ -1,7 +1,5 @@
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout, expect
 
-from helpers.location import pick_location
-
 
 class UnitsPage:
 
@@ -20,8 +18,7 @@ class UnitsPage:
         self.country_code_select = page.locator("#mui-component-select-countryCode")
         self.branch_select = page.locator("#mui-component-select-branchId")
         self.language_select = page.locator("#languageCode-selection")
-        self.gender_select = page.locator("#mui-component-select-gender")
-        self.country = page.get_by_label("Country", exact=True)
+        self.back_button = page.locator("[data-testid='ArrowBackIcon']")
         self.map_switch = page.locator(".MuiSwitch-root").first
         self.map_switch_input = page.locator(".MuiSwitch-input").first
 
@@ -66,22 +63,6 @@ class UnitsPage:
         self.branch_select.click()
         self.page.get_by_role("option", name=branch_code).click()
 
-    def _select_first_option(self, combo):
-        """Open a MUI select and choose the first option if none is set yet."""
-        if combo.count() == 0 or not combo.first.is_visible():
-            return False
-
-        text = (combo.first.inner_text() or "").strip().replace("\u200b", "")
-        # Placeholder-only values mean nothing real is selected yet.
-        if text and text.lower() not in ("language", "gender", ""):
-            return True
-
-        combo.first.click()
-        option = self.page.get_by_role("option").first
-        option.wait_for(state="visible", timeout=5_000)
-        option.click()
-        return True
-
     def select_language(self, name: str = "English"):
         """Select a Language option on Other Details (e.g. English)."""
         self.language_select.wait_for(state="visible", timeout=10_000)
@@ -90,19 +71,9 @@ class UnitsPage:
         option.wait_for(state="visible", timeout=5_000)
         option.click()
 
-    def unlock_other_details(self):
-        """Other Details has no *required* fields, but Submit stays disabled
-        until at least one value (Language / Gender / location) is set."""
-        if self.submit_button.is_enabled():
-            return
-
-        if self._select_first_option(self.language_select):
-            if self.submit_button.is_enabled():
-                return
-
-        if self._select_first_option(self.gender_select):
-            if self.submit_button.is_enabled():
-                return
+    def back(self):
+        """Leave the form. After create, this returns to the units list."""
+        self.back_button.click()
 
     def fill_required(
         self,
@@ -153,77 +124,40 @@ class UnitsPage:
             country_code=country_code,
         )
 
-    def finish_create(
-        self,
-        location_query: str | None = "Katraj, Pune",
-        language: str | None = None,
-    ):
-        """Personal Details → Other Details → final Submit.
+    def finish_create(self):
+        """Submit Personal Details, then go back to the units list.
 
-        Prefer an explicit language (e.g. English) when location is not needed.
+        That first Submit creates the unit. Other Details is a later update,
+        so Back is enough to see the new row.
         """
-        # Advance from Personal Details when Submit is enabled
-        expect(self.submit_button).to_be_enabled(timeout=10_000)
         self.submit_button.click()
-
+        self.page.get_by_text("user created successfully", exact=True).first.wait_for(
+            state="visible", timeout=15_000
+        )
         self.page.get_by_role("heading", name="Other Details").wait_for(
             state="visible", timeout=15_000
         )
-        if language:
-            self.select_language(language)
-        else:
-            self.unlock_other_details()
-
-        if location_query and not self.submit_button.is_enabled():
-            try:
-                pick_location(
-                    self.page, location_query, country_locator=self.country
-                )
-            except Exception:
-                pass
-        if not self.submit_button.is_enabled():
-            if language:
-                self.select_language(language)
-            else:
-                self.unlock_other_details()
-        expect(self.submit_button).to_be_enabled(timeout=15_000)
-        self.submit_button.click()
-
-        confirm = self.page.get_by_role("button", name="Confirm")
-        try:
-            confirm.wait_for(state="visible", timeout=3_000)
-            confirm.click()
-        except PlaywrightTimeout:
-            pass
+        self.back()
 
     def submit(self):
         self.submit_button.click()
 
-    def save_edit(self, location_query: str = "Katraj, Pune"):
-        """Submit update form; may advance Personal Details → Other Details."""
+    def save_edit(self):
+        """Submit the edit form. Other Details may open with Submit disabled."""
         self.submit_button.click()
         try:
             self.page.get_by_role("heading", name="Other Details").wait_for(
                 state="visible", timeout=5_000
             )
-            self.unlock_other_details()
-            if not self.submit_button.is_enabled():
-                pick_location(
-                    self.page, location_query, country_locator=self.country
-                )
-            if not self.submit_button.is_enabled():
-                self.unlock_other_details()
-            expect(self.submit_button).to_be_enabled(timeout=15_000)
-            self.submit_button.click()
         except PlaywrightTimeout:
-            pass
+            return
 
-        confirm = self.page.get_by_role("button", name="Confirm")
-        try:
-            confirm.wait_for(state="visible", timeout=3_000)
-            confirm.click()
-        except PlaywrightTimeout:
-            pass
+        if not self.submit_button.is_enabled():
+            self.select_language("English")
+        if self.submit_button.is_enabled():
+            self.submit_button.click()
+            return
+        self.back()
 
     def reset(self):
         self.reset_button.click()
