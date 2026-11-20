@@ -18,7 +18,8 @@ with open("test_data/unit_cases.json", "r", encoding="utf-8") as file:
 
 BRANCH = unit_data["default_branch_code"]
 PASSWORD = unit_data["password"]
-LOCATION = "Katraj, Pune"
+CREATED_MESSAGE = "user created successfully"
+UPDATED_MESSAGE = "ITACO User's Details are Updated Successfully"
 
 
 @pytest.mark.smoke
@@ -55,7 +56,15 @@ def test_unit_create_required_fields(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text(CREATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
+    expect(authenticated_page.get_by_role("heading", name="Other Details")).to_be_visible()
+    expect(units.submit_button).to_be_disabled()
+
+    units.back()
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
@@ -79,8 +88,48 @@ def test_unit_create_all_fields(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.submit()
 
+    expect(
+        authenticated_page.get_by_text(CREATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
+    units.back()
+
+    expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
+    expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
+
+
+@pytest.mark.regression
+def test_unit_other_details_updates_created_user(authenticated_page):
+    """First Submit creates the unit. Other Details Submit updates that same row."""
+    units = UnitsPage(authenticated_page)
+    email = unique_email("unit.update")
+
+    units.open()
+    units.open_create()
+    units.fill_required(
+        first_name=unique_first_name(),
+        last_name=unique_last_name(),
+        email=email,
+        phone=unique_mobile(),
+        password=PASSWORD,
+        branch_code=BRANCH,
+    )
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text(CREATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
+    expect(authenticated_page.get_by_role("heading", name="Other Details")).to_be_visible()
+    expect(units.submit_button).to_be_disabled()
+
+    units.select_language("English")
+    expect(units.submit_button).to_be_enabled()
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text(UPDATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
     expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
 
@@ -100,7 +149,11 @@ def test_unit_create_shows_row_details(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.submit()
+    expect(
+        authenticated_page.get_by_text(CREATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
+    units.back()
 
     row = units.row_containing(email)
     expect(row).to_be_visible(timeout=15_000)
@@ -127,7 +180,7 @@ def test_unit_edit_updates_first_name(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.finish_create()
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
 
     units.edit_row_by_email(email)
@@ -160,7 +213,7 @@ def test_unit_delete_removes_row(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.finish_create()
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
 
     units.delete_row_by_email(email)
@@ -187,7 +240,7 @@ def test_unit_search_filters_by_email(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.finish_create()
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
 
     units.search_for("unit.search")
@@ -209,7 +262,7 @@ def test_unit_clear_search(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.finish_create()
 
     units.search_for(email)
     expect(units.row_by_email(email)).to_be_visible(timeout=10_000)
@@ -254,7 +307,7 @@ def test_unit_delete_cancel_keeps_row(authenticated_page):
         password=PASSWORD,
         branch_code=BRANCH,
     )
-    units.finish_create(location_query=LOCATION)
+    units.finish_create()
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
 
     units.delete_row_by_email(email)
@@ -352,8 +405,7 @@ def test_unit_password_mismatch_rejected(authenticated_page):
 
 @pytest.mark.regression
 def test_unit_create_without_branch_shows_row(authenticated_page):
-    """Branch is optional — create with required personal fields only, then
-    set Language=English on Other Details and assert the list row."""
+    """Branch is optional. The first Submit still creates the unit."""
     units = UnitsPage(authenticated_page)
     email = unique_email("unit.nobranch")
 
@@ -367,8 +419,12 @@ def test_unit_create_without_branch_shows_row(authenticated_page):
         password=PASSWORD,
         branch_code=None,
     )
-    # Personal Details → Other Details: Language only (no location)
-    units.finish_create(location_query=None, language="English")
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text(CREATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
+    units.back()
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)

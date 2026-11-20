@@ -86,7 +86,11 @@ def test_office_branch_unit_happy_path(authenticated_page):
         password=password,
         branch_code=branch_code,
     )
-    units.finish_create(location_query=location)
+    units.submit()
+    expect(
+        authenticated_page.get_by_text("user created successfully", exact=True).first
+    ).to_be_visible(timeout=15_000)
+    units.back()
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
     expect(units.row_by_email(unit_email)).to_be_visible(timeout=15_000)
@@ -135,7 +139,11 @@ def test_branch_unit_edit_then_search(authenticated_page):
         password=password,
         branch_code=branch_code,
     )
-    units.finish_create(location_query=location)
+    units.submit()
+    expect(
+        authenticated_page.get_by_text("user created successfully", exact=True).first
+    ).to_be_visible(timeout=15_000)
+    units.back()
     expect(units.row_by_email(unit_email)).to_be_visible(timeout=15_000)
 
     units.edit_row_by_email(unit_email)
