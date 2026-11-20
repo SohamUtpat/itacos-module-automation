@@ -1,0 +1,122 @@
+{
+  "success_message": "Login Successfully",
+  "account": {
+    "note": "Expectations for the configured Provider Office Admin account only. Other users can have a different role, department, or permission list.",
+    "user_type": "SERVICE_PROVIDER",
+    "role": "Provider Office Admin",
+    "department": "Service Providers",
+    "permissions": ["Modify", "View", "Write"]
+  },
+  "negative_cases": [
+    {
+      "id": "invalid_username",
+      "user_name": "wrong.user@example.com",
+      "password": "ENV",
+      "expected_status": 404,
+      "expected_messages": ["Invalid username or Password for wrong.user@example.com"]
+    },
+    {
+      "id": "invalid_password",
+      "user_name": "ENV",
+      "password": "WrongPassword123",
+      "expected_status": 400,
+      "expected_messages": ["Invalid username or Password "]
+    },
+    {
+      "id": "both_credentials_invalid",
+      "user_name": "wrong.user@example.com",
+      "password": "WrongPassword123",
+      "expected_status": 404,
+      "expected_messages": ["Invalid username or Password for wrong.user@example.com"]
+    },
+    {
+      "id": "empty_username",
+      "user_name": "",
+      "password": "ENV",
+      "expected_status": 400,
+      "expected_messages": ["Either Email or Phone Number is Mandatory"]
+    },
+    {
+      "id": "empty_password",
+      "user_name": "ENV",
+      "password": "",
+      "expected_status": 400,
+      "expected_messages": ["Password is Mandatory"]
+    },
+    {
+      "id": "both_fields_empty",
+      "user_name": "",
+      "password": "",
+      "expected_status": 400,
+      "expected_messages": [
+        "Either Email or Phone Number is Mandatory",
+        "Password is Mandatory"
+      ]
+    },
+    {
+      "id": "missing_username",
+      "include_user_name": false,
+      "password": "ENV",
+      "expected_status": 400,
+      "expected_messages": ["Either Email or Phone Number is Mandatory"]
+    },
+    {
+      "id": "missing_password",
+      "include_password": false,
+      "user_name": "ENV",
+      "expected_status": 400,
+      "expected_messages": ["Password is Mandatory"]
+    },
+    {
+      "id": "null_username",
+      "user_name": null,
+      "password": "ENV",
+      "expected_status": 400,
+      "expected_messages": ["Either Email or Phone Number is Mandatory"]
+    },
+    {
+      "id": "null_password",
+      "user_name": "ENV",
+      "password": null,
+      "expected_status": 400,
+      "expected_messages": ["Password is Mandatory"]
+    },
+    {
+      "id": "invalid_email_format",
+      "user_name": "not-an-email",
+      "password": "ENV",
+      "expected_status": 404,
+      "expected_messages": ["Invalid username or Password for not-an-email"]
+    },
+    {
+      "id": "password_wrong_case",
+      "user_name": "ENV",
+      "password": "CASE",
+      "expected_status": 400,
+      "expected_messages": ["Invalid username or Password "]
+    },
+    {
+      "id": "username_with_spaces",
+      "user_name": "SPACES",
+      "password": "ENV",
+      "expected_status": 404,
+      "expected_message_template": "Invalid username or Password for {user_name}"
+    },
+    {
+      "id": "invalid_app_type",
+      "user_name": "ENV",
+      "password": "ENV",
+      "app_type": "NOT_A_REAL_APP",
+      "expected_status": 400,
+      "expected_messages": ["App type not Valid. Only Mobile and Web are allowed"]
+    },
+    {
+      "id": "invalid_force_login",
+      "user_name": "ENV",
+      "password": "ENV",
+      "force_login": "yes",
+      "expected_status": 400,
+      "expected_error": "Bad Request"
+    }
+  ]
+}
