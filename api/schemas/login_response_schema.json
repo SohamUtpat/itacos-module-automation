@@ -1,0 +1,20 @@
+{
+  "description": "Fields observed on a successful UAT login. The user object is userBasicDetails.",
+  "required_paths": [
+    "message",
+    "data",
+    "data.loginAudit",
+    "data.loginAudit.token",
+    "data.loginAudit.userBasicDetails",
+    "data.loginAudit.userBasicDetails.id",
+    "data.loginAudit.userBasicDetails.tenantId",
+    "data.loginAudit.userBasicDetails.firstName",
+    "data.loginAudit.userBasicDetails.lastName",
+    "data.loginAudit.userBasicDetails.email",
+    "data.loginAudit.userBasicDetails.userType",
+    "data.loginAudit.userBasicDetails.role",
+    "data.loginAudit.userBasicDetails.role.role",
+    "data.loginAudit.userBasicDetails.permission",
+    "data.loginAudit.userBasicDetails.userRolesPostResponse"
+  ]
+}

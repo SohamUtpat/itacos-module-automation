@@ -1,6 +1,8 @@
 # Itacos Module Automation
 
-Playwright + Pytest UI automation for the Assist Me / Itacos UAT app, focused on **Provider Office Admin** flows:
+Playwright + Pytest automation for the Assist Me / Itacos UAT app, focused on **Provider Office Admin** flows.
+
+UI tests live in `tests/`. Login API tests live in `api/`. The two suites share Pytest, Playwright, `.env`, and pytest-html, and they are run separately.
 
 - Login
 - Office Details
@@ -22,6 +24,7 @@ Playwright + Pytest UI automation for the Assist Me / Itacos UAT app, focused on
 | pytest-playwright | Playwright fixtures |
 | python-dotenv | Load credentials from `.env` |
 | pytest-html | HTML test report |
+| Playwright APIRequestContext | Login API requests |
 
 ---
 
@@ -43,10 +46,20 @@ Playwright + Pytest UI automation for the Assist Me / Itacos UAT app, focused on
 ├── helpers/            # Shared helpers (URLs, unique data, location)
 ├── test_data/          # JSON test data
 ├── reports/            # HTML report, screenshots, traces
-├── conftest.py         # Auth fixtures, failure screenshots
+├── conftest.py         # UI auth fixtures, failure screenshots
+├── api/                # Login API automation
+│   ├── clients/api_client.py
+│   ├── endpoints/auth_endpoints.py
+│   ├── helpers/checks.py
+│   ├── tests/test_login_api.py
+│   ├── LOGIN_API_SCENARIOS.md
+│   ├── test_data/login_data.json
+│   ├── schemas/login_response_schema.json
+│   └── conftest.py
 ├── pytest.ini          # Markers, report defaults
 ├── requirements.txt
-└── .env                # Local credentials
+├── .env.example        # Placeholder variable names
+└── .env                # Local credentials (not committed)
 ```
 
 ---
@@ -84,16 +97,38 @@ BASE_URL=https://uat.assistme.me/login
 LOGIN_EMAIL_OR_MOBILE=your_email@example.com
 LOGIN_MOBILE=your_mobile_number
 LOGIN_PASSWORD=your_password
+
+API_BASE_URL=https://uat.assistme.me
+API_USERNAME=your_test_username
+API_PASSWORD=your_test_password
+API_MOBILE=your_mobile_number
+API_MAX_RESPONSE_MS=5000
 ```
+
+Copy `.env.example` if you want the same placeholders. `.env` is listed in `.gitignore`. Do not commit usernames, passwords, or tokens.
+
+If `API_USERNAME` / `API_PASSWORD` are empty, the login API tests use `LOGIN_EMAIL_OR_MOBILE` and `LOGIN_PASSWORD`. `API_BASE_URL` falls back to the host of `BASE_URL`.
 
 ---
 
 ## How to run tests
 
-### All tests
+### All UI tests
 
 ```powershell
-python -m pytest tests
+python -m pytest tests/ -v
+```
+
+### Login API tests
+
+```powershell
+python -m pytest api/tests/test_login_api.py -v
+```
+
+### All UI and API tests
+
+```powershell
+python -m pytest -v
 ```
 
 ### By marker
@@ -132,13 +167,72 @@ Every run (via `pytest.ini`) produces:
 | Failure screenshots | `reports/screenshots/` |
 | Playwright traces / artifacts | `reports/test-results/` |
 
-Open the HTML report in a browser after a run. For a failed test, open the matching screenshot or view the Playwright trace:
+The same `pytest.ini` options write `reports/report.html` for UI and API runs. To keep a UI report while running the login API, pass a second path:
+
+```powershell
+python -m pytest api/tests/test_login_api.py -v --html=reports/api-report.html --self-contained-html
+```
+
+Open the HTML report in a browser after a run. For a failed UI test, open the matching screenshot or view the Playwright trace:
 
 ```powershell
 playwright show-trace reports/test-results/<folder>/trace.zip
 ```
 
 More detail: [REPORTING.md](REPORTING.md)
+
+---
+
+## Login API
+
+The login API suite calls the confirmed UAT endpoint:
+
+`POST /user-management-service/v1/login`
+
+Request fields are `userName`, `password`, `appType` (`WEB`), and `forceLogin` (`true`). A successful login returns HTTP 201 and `Login Successfully`. The token is at `data.loginAudit.token`. The user object is `data.loginAudit.userBasicDetails` (this is the live field name).
+
+Office, unit, branch, and workshop APIs are not automated yet. Their URLs have not been confirmed.
+
+### Bearer token
+
+`authenticated_api` in `api/conftest.py` logs in once per pytest session, reads `data.loginAudit.token`, and creates a second Playwright request context with `Authorization: Bearer <token>`. The token is not printed and is disposed of when the session ends. Negative login tests use `api_client` and do not need that token.
+
+No protected resource URL has been confirmed yet, so expired, modified, and missing tokens are not called against another endpoint. The login request itself is public.
+
+### Login API coverage
+
+Implemented in `api/tests/test_login_api.py`:
+
+- Valid username/password, HTTP 201, success message, token, user id, tenant id, first and last name
+- User type `SERVICE_PROVIDER`, role `Provider Office Admin`, department `Service Providers`
+- Permissions `View`, `Write`, and `Modify` for this test account only
+- JSON content type, required response paths, and response time (`API_MAX_RESPONSE_MS`, default 5000)
+- Username letter-case variation and mobile login (mobile is skipped when `API_MOBILE` / `LOGIN_MOBILE` is empty)
+- Invalid, empty, missing, and null credentials
+- Invalid email-shaped username, wrong password case, username spaces, invalid `appType`, invalid `forceLogin`
+- Password is absent from the success body
+- SQL-like and script-like usernames are rejected and do not return a token
+- Five repeated invalid attempts stay HTTP 404. UAT did not return HTTP 429 during discovery
+
+### UI scenario mapping
+
+| UI case | API coverage |
+|---------|----------------|
+| TC-L01 valid email login | `test_login_with_valid_username_and_password` and the field checks on that response |
+| TC-L02 valid mobile login | `test_login_with_valid_mobile` |
+| TC-L03 password masking | UI only. The API checks that the password is not returned |
+| TC-L04 invalid email | `invalid_username` |
+| TC-L05 invalid password | `invalid_password` |
+| TC-L06 both invalid | `both_credentials_invalid` |
+| TC-L07 unknown mobile | Covered by the unknown-username rejection. A separate unknown-mobile case is not duplicated |
+| TC-L08 empty username | `empty_username` |
+| TC-L09 empty password | `empty_password` |
+| TC-L10 both empty | `both_fields_empty` |
+| TC-L11 password case | `password_wrong_case` |
+| TC-L12 email case | `test_login_with_username_case_variation` |
+| TC-L13 username spaces | `username_with_spaces`. UAT rejects the spaced username with HTTP 404 |
+| TC-L14 password spaces | Not a separate API case. Wrong-password rejection is covered |
+| TC-L15 SQL-like input | `test_sql_like_username_is_rejected` |
 
 ---
 
@@ -158,6 +252,7 @@ Full conventions: [APPROACH.md](APPROACH.md)
 | Module | Doc |
 |--------|-----|
 | Login | [LOGIN_SCENARIOS.md](LOGIN_SCENARIOS.md) |
+| Login API | [api/LOGIN_API_SCENARIOS.md](api/LOGIN_API_SCENARIOS.md) |
 | Office | [OFFICE_SCENARIOS.md](OFFICE_SCENARIOS.md) |
 | Branches | [BRANCHES_SCENARIOS.md](BRANCHES_SCENARIOS.md) |
 | Units | [UNITS_SCENARIOS.md](UNITS_SCENARIOS.md) |
