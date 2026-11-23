@@ -4,25 +4,17 @@
 **Role under test:** Provider Office Admin only  
 **Fields:** Mobile/Email ID, Password, Login button  
 
+**Run order:** Negative cases first (TC-L04 – TC-L15), then positive / happy path (TC-L01 – TC-L03).
+
 ---
 
 ## Summary
 
 | Type | Count | IDs |
 |------|-------|-----|
-| Positive / Happy | 3 | TC-L01 – TC-L03 |
 | Negative | 12 | TC-L04 – TC-L15 |
+| Positive / Happy | 3 | TC-L01 – TC-L03 |
 | **Total** | **15** | |
-
----
-
-## Positive / Happy path
-
-| ID | Title | Steps (high level) | Expected result |
-|----|--------|--------------------|-----------------|
-| TC-L01 | Valid login with correct email and password | Enter valid email + valid password → Login | User lands in the app; Provider Office Admin role is visible |
-| TC-L02 | Valid login with correct mobile and password | Enter valid mobile + valid password → Login | User lands in the app; Provider Office Admin role is visible |
-| TC-L03 | Password field masks input | Type password | Password characters are hidden (not shown as plain text) |
 
 ---
 
@@ -66,9 +58,19 @@
 
 ---
 
+## Positive / Happy path
+
+| ID | Title | Steps (high level) | Expected result |
+|----|--------|--------------------|-----------------|
+| TC-L01 | Valid login with correct email and password | Enter valid email + valid password → Login | User lands in the app; Provider Office Admin role is visible |
+| TC-L02 | Valid login with correct mobile and password | Enter valid mobile + valid password → Login | User lands in the app; Provider Office Admin role is visible |
+| TC-L03 | Password field masks input | Type password | Password characters are hidden (not shown as plain text) |
+
+---
+
 ## Automation status
 
-All 15 IDs are in `test_data/login_users.json` and collected by `tests/test_login.py`.
+All 15 IDs are in `test_data/login_users.json` and collected by `tests/test_login.py` (negatives first, then positives).
 
 | ID | Notes |
 |----|--------|
@@ -89,12 +91,12 @@ All 15 IDs are in `test_data/login_users.json` and collected by `tests/test_logi
 
 ## Suggested first automation set (when we start coding)
 
-Priority smoke / core:
+Priority smoke / core (negatives first, then happy path):
 
-1. TC-L01 — valid login (happy path)  
-2. TC-L05 — invalid password  
-3. TC-L08 — empty email / mobile  
-4. TC-L09 — empty password  
-5. TC-L10 — both empty  
+1. TC-L05 — invalid password  
+2. TC-L08 — empty email / mobile  
+3. TC-L09 — empty password  
+4. TC-L10 — both empty  
+5. TC-L01 — valid login (happy path)  
 
 Then add the rest as regression.

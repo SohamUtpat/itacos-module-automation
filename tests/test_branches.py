@@ -14,6 +14,94 @@ with open("test_data/branch_cases.json", "r", encoding="utf-8") as file:
 LOCATION = branch_data["location_query"]
 
 
+# --- Negative cases (first) ---
+
+
+@pytest.mark.regression
+def test_branch_empty_required_rejected(authenticated_page):
+    branches = BranchesPage(authenticated_page)
+    branches.open()
+    branches.open_create()
+    branches.save()
+
+    expect(authenticated_page.get_by_text("Mobile number is required")).to_be_visible()
+    expect(authenticated_page.get_by_text("Landline number is required")).to_be_visible()
+    expect(authenticated_page.get_by_text("Email is required.")).to_be_visible()
+    expect(authenticated_page.get_by_text("Please select at least one day")).to_be_visible()
+
+
+@pytest.mark.regression
+def test_branch_alphabets_in_mobile_rejected(authenticated_page):
+    branches = BranchesPage(authenticated_page)
+    branches.open()
+    branches.open_create()
+    branches.mobile_number.fill("abcdefghij")
+    # Blur mobile so field-level validation appears
+    branches.email.click()
+
+    expect(
+        authenticated_page.get_by_text(
+            "Please enter valid mobile number", exact=True
+        )
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_branch_invalid_email_rejected(authenticated_page):
+    branches = BranchesPage(authenticated_page)
+    branches.open()
+    branches.open_create()
+    branches.mobile_number.fill(unique_mobile())
+    branches.email.fill("bad-email")
+    branches.save()
+
+    expect(
+        authenticated_page.get_by_text("Enter a valid email.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_branch_invalid_landline_rejected(authenticated_page):
+    branches = BranchesPage(authenticated_page)
+    branches.open()
+    branches.open_create()
+    branches.mobile_number.fill(unique_mobile())
+    branches.email.fill(unique_email("branch.ll"))
+    branches.landline.fill("abcdefgh")
+    branches.save()
+
+    expect(
+        authenticated_page.get_by_text(
+            "Please enter valid Landline number", exact=True
+        )
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_branch_no_location_rejected(authenticated_page):
+    branches = BranchesPage(authenticated_page)
+    branches.open()
+    branches.open_create()
+    branches.fill_required(
+        mobile=unique_mobile(),
+        email=unique_email("branch.noloc"),
+        location_query=None,
+        landline="21234567",
+        pick_location_flag=False,
+    )
+    branches.save()
+
+    expect(
+        authenticated_page.get_by_text("Country is required", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Address is required", exact=True)
+    ).to_be_visible()
+
+
+# --- Positive / smoke (after negatives) ---
+
+
 @pytest.mark.smoke
 def test_branches_page_loads(authenticated_page):
     branches = BranchesPage(authenticated_page)
@@ -211,85 +299,3 @@ def test_branch_confirm_cancel_stays_on_form(authenticated_page):
     expect(authenticated_page).to_have_url(url_is("/service-provider/branches/create"))
     branches.open()
     expect(branches.row_by_email(email)).to_have_count(0)
-
-
-@pytest.mark.regression
-def test_branch_empty_required_rejected(authenticated_page):
-    branches = BranchesPage(authenticated_page)
-    branches.open()
-    branches.open_create()
-    branches.save()
-
-    expect(authenticated_page.get_by_text("Mobile number is required")).to_be_visible()
-    expect(authenticated_page.get_by_text("Landline number is required")).to_be_visible()
-    expect(authenticated_page.get_by_text("Email is required.")).to_be_visible()
-    expect(authenticated_page.get_by_text("Please select at least one day")).to_be_visible()
-
-
-@pytest.mark.regression
-def test_branch_alphabets_in_mobile_rejected(authenticated_page):
-    branches = BranchesPage(authenticated_page)
-    branches.open()
-    branches.open_create()
-    branches.mobile_number.fill("abcdefghij")
-    # Blur mobile so field-level validation appears
-    branches.email.click()
-
-    expect(
-        authenticated_page.get_by_text(
-            "Please enter valid mobile number", exact=True
-        )
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_branch_invalid_email_rejected(authenticated_page):
-    branches = BranchesPage(authenticated_page)
-    branches.open()
-    branches.open_create()
-    branches.mobile_number.fill(unique_mobile())
-    branches.email.fill("bad-email")
-    branches.save()
-
-    expect(
-        authenticated_page.get_by_text("Enter a valid email.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_branch_invalid_landline_rejected(authenticated_page):
-    branches = BranchesPage(authenticated_page)
-    branches.open()
-    branches.open_create()
-    branches.mobile_number.fill(unique_mobile())
-    branches.email.fill(unique_email("branch.ll"))
-    branches.landline.fill("abcdefgh")
-    branches.save()
-
-    expect(
-        authenticated_page.get_by_text(
-            "Please enter valid Landline number", exact=True
-        )
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_branch_no_location_rejected(authenticated_page):
-    branches = BranchesPage(authenticated_page)
-    branches.open()
-    branches.open_create()
-    branches.fill_required(
-        mobile=unique_mobile(),
-        email=unique_email("branch.noloc"),
-        location_query=None,
-        landline="21234567",
-        pick_location_flag=False,
-    )
-    branches.save()
-
-    expect(
-        authenticated_page.get_by_text("Country is required", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Address is required", exact=True)
-    ).to_be_visible()

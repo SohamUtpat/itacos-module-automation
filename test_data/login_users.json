@@ -1,26 +1,5 @@
 [
   {
-    "id": "TC-L01",
-    "email_or_mobile": "ENV",
-    "password": "ENV",
-    "expected": "success",
-    "mark": "smoke"
-  },
-  {
-    "id": "TC-L02",
-    "email_or_mobile": "ENV_MOBILE",
-    "password": "ENV",
-    "expected": "success",
-    "mark": "smoke"
-  },
-  {
-    "id": "TC-L03",
-    "email_or_mobile": "ENV",
-    "password": "ENV",
-    "expected": "masked",
-    "mark": "smoke"
-  },
-  {
     "id": "TC-L04",
     "email_or_mobile": "wrong.user@example.com",
     "password": "ENV",
@@ -117,5 +96,26 @@
     "expected": "error",
     "error_message": "Invalid username or Password for ' OR '1'='1",
     "mark": "regression"
+  },
+  {
+    "id": "TC-L01",
+    "email_or_mobile": "ENV",
+    "password": "ENV",
+    "expected": "success",
+    "mark": "smoke"
+  },
+  {
+    "id": "TC-L02",
+    "email_or_mobile": "ENV_MOBILE",
+    "password": "ENV",
+    "expected": "success",
+    "mark": "smoke"
+  },
+  {
+    "id": "TC-L03",
+    "email_or_mobile": "ENV",
+    "password": "ENV",
+    "expected": "masked",
+    "mark": "smoke"
   }
 ]
