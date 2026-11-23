@@ -1,0 +1,20 @@
+{
+  "description": "Fields observed on a successful UAT provider-units list response.",
+  "required_paths": [
+    "message",
+    "data",
+    "data.users"
+  ],
+  "item_required_paths": [
+    "id",
+    "code",
+    "providerOffice",
+    "userBasicDetails",
+    "userBasicDetails.id",
+    "userBasicDetails.email",
+    "userBasicDetails.firstName",
+    "unitStatusCode",
+    "providerOfficeBranchResponse",
+    "providerOfficeBranchResponse.code"
+  ]
+}

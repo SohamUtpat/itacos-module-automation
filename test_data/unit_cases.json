@@ -1,6 +1,11 @@
 {
   "default_branch_code": "SP-B008",
   "password": "Unit@12345",
+  "location_query": "Katraj, Pune",
+  "language": "English",
+  "gender": "MALE",
+  "po_box": "411046",
+  "profile_photo": "test_data/profile.png",
   "negatives": [
     {
       "id": "TC-U03",

@@ -1,4 +1,4 @@
-"""Small checks for login responses.
+"""Small checks for API responses.
 
 Failure messages intentionally omit tokens, passwords, and personal fields.
 """
@@ -28,7 +28,7 @@ def value_at(body, path):
 def require_text(body, path, label):
     value = value_at(body, path)
     if not isinstance(value, str) or not value.strip():
-        pytest.fail(f"Login response did not include {label}")
+        pytest.fail(f"Response did not include {label}")
     return value
 
 
@@ -51,53 +51,41 @@ def assert_no_server_leak(body):
 
 
 def error_messages(body):
-    """Return non-empty errorMessage values from the API response body."""
     errors = body.get("errors") if isinstance(body, dict) else None
     if not isinstance(errors, list):
         return []
-    messages = []
-    for item in errors:
-        if not isinstance(item, dict):
-            continue
-        message = item.get("errorMessage")
-        if isinstance(message, str) and message.strip():
-            messages.append(message)
-    return messages
-
-
-def response_error_text(body):
-    """Return the top-level error string from the API response, if present."""
-    if not isinstance(body, dict):
-        return None
-    error = body.get("error")
-    if isinstance(error, str) and error.strip():
-        return error
-    return None
+    return [item.get("errorMessage") for item in errors if isinstance(item, dict)]
 
 
 def safe_error_summary(body):
     """Details that are safe to show when a status code does not match."""
     if not isinstance(body, dict):
         return "response was not a JSON object"
-    messages = error_messages(body)
-    if messages:
-        return messages
-    error = response_error_text(body)
-    if error:
-        return {"status": body.get("status"), "error": error}
+    if "errors" in body:
+        return error_messages(body)
+    if "error" in body:
+        return {"status": body.get("status"), "error": body.get("error")}
     return {"keys": sorted(body.keys())}
 
 
-def assert_rejected(response, password, expected_status):
-    """Assert a rejected login using HTTP status and error details from the API response."""
+def parse_json(response, label="Response"):
     content_type = response.headers.get("content-type", "")
     if "application/json" not in content_type:
-        pytest.fail(f"Expected a JSON response, got content-type '{content_type}'")
-
+        pytest.fail(f"{label} expected application/json, got '{content_type}'")
     try:
-        body = response.json()
+        return response.json()
     except Exception:
-        pytest.fail(f"Rejected login did not return JSON (HTTP {response.status})")
+        pytest.fail(f"{label} was not JSON (HTTP {response.status})")
+
+
+def assert_rejected(
+    response,
+    password,
+    expected_status,
+    expected_messages=None,
+    expected_error=None,
+):
+    body = parse_json(response, "Rejected login")
 
     if response.status != expected_status:
         pytest.fail(
@@ -109,12 +97,50 @@ def assert_rejected(response, password, expected_status):
     assert_password_absent(body, password)
     assert_no_server_leak(body)
 
-    actual_messages = error_messages(body)
-    actual_error = response_error_text(body)
-    if not actual_messages and not actual_error:
+    if expected_messages is not None and error_messages(body) != expected_messages:
+        pytest.fail(f"Unexpected error messages: {error_messages(body)}")
+
+    if expected_error is not None and body.get("error") != expected_error:
+        pytest.fail(f"Unexpected error value: {body.get('error')}")
+
+    return body
+
+
+def assert_error_status(
+    response,
+    expected_status,
+    *,
+    password=None,
+    expected_messages=None,
+    message_contains=None,
+    expected_error=None,
+):
+    """Generic HTTP error check for non-login endpoints."""
+    body = parse_json(response, "Error response")
+
+    if response.status != expected_status:
         pytest.fail(
-            "Rejected login API response did not include error messages "
-            "(expected errors[].errorMessage or a top-level error field)"
+            f"Expected HTTP {expected_status}, got {response.status}. "
+            f"Details: {safe_error_summary(body)}"
         )
+
+    if password:
+        assert_password_absent(body, password)
+    assert_no_server_leak(body)
+
+    if expected_messages is not None and error_messages(body) != expected_messages:
+        pytest.fail(f"Unexpected error messages: {error_messages(body)}")
+
+    if message_contains is not None:
+        messages = error_messages(body)
+        blob = " | ".join(str(item) for item in messages)
+        for fragment in message_contains:
+            if fragment not in blob:
+                pytest.fail(
+                    f"Expected error text to include '{fragment}', got {messages}"
+                )
+
+    if expected_error is not None and body.get("error") != expected_error:
+        pytest.fail(f"Unexpected error value: {body.get('error')}")
 
     return body

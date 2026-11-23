@@ -1,6 +1,7 @@
 from playwright.sync_api import Page, expect
 
 from helpers.location import pick_location
+from helpers.urls import path_matches
 
 
 class OfficePage:
@@ -36,7 +37,10 @@ class OfficePage:
         expect(self.company_name).not_to_have_value("", timeout=20_000)
 
     def open(self):
-        self.page.get_by_role("button", name="Office Details").click()
+        if not path_matches(
+            self.page.url, "/service-provider/provider-office/manage-office"
+        ):
+            self.page.get_by_role("button", name="Office Details").click()
         self.wait_until_loaded()
 
     def fill_required(

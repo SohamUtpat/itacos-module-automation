@@ -5,6 +5,7 @@
 **Update:** `/service-provider/garages/update/{id}`  
 **Depends on:** Provider Office already onboarded (company name is shown on the form)  
 **Tests:** `tests/test_workshops.py`  
+**Run order:** Negative cases first, then smoke / positive.
 
 The list has Code, Contact Email, City, Contact Number, Landline Number, Status, and Actions, plus a Map view switch. There is no visible search box, so this module has no search scenarios.
 

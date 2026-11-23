@@ -1,0 +1,26 @@
+{
+  "description": "Fields observed on a successful UAT unit (ITACO user) create.",
+  "required_paths": [
+    "message",
+    "data",
+    "data.itacoUserResponse",
+    "data.itacoUserResponse.userBasicDetails",
+    "data.itacoUserResponse.userBasicDetails.id",
+    "data.itacoUserResponse.userBasicDetails.unitCode",
+    "data.itacoUserResponse.userBasicDetails.tenantId",
+    "data.itacoUserResponse.userBasicDetails.firstName",
+    "data.itacoUserResponse.userBasicDetails.email",
+    "data.itacoUserResponse.userBasicDetails.phone",
+    "data.itacoUserResponse.userBasicDetails.userStatus",
+    "data.itacoUserResponse.userBasicDetails.userType",
+    "data.itacoUserResponse.userBasicDetails.unitStatus",
+    "data.itacoUserResponse.userBasicDetails.role",
+    "data.itacoUserResponse.userBasicDetails.role.role",
+    "data.itacoUserResponse.userBasicDetails.department",
+    "data.itacoUserResponse.userBasicDetails.department.name",
+    "data.itacoUserResponse.providerOfficeBranchResponse",
+    "data.itacoUserResponse.providerOfficeBranchResponse.id",
+    "data.itacoUserResponse.providerOfficeBranchResponse.code",
+    "data.itacoUserResponse.providerId"
+  ]
+}

@@ -1,6 +1,7 @@
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout, expect
 
 from helpers.location import pick_location
+from helpers.urls import path_matches
 
 
 DEFAULT_WORKING_DAYS = [
@@ -44,7 +45,10 @@ class WorkshopsPage:
 
     def open(self):
         """Open the Workshops list; reload once if Create Workshop never appears."""
-        self.page.get_by_role("button", name="Workshops", exact=True).click()
+        if path_matches(self.page.url, "/service-provider/garages/create"):
+            return
+        if not path_matches(self.page.url, "/service-provider/garages"):
+            self.page.get_by_role("button", name="Workshops", exact=True).click()
         self.page.get_by_role("heading", name="Workshops").wait_for(
             state="visible", timeout=20_000
         )
@@ -64,7 +68,8 @@ class WorkshopsPage:
             pass
 
     def open_create(self):
-        self.create_button.click()
+        if not path_matches(self.page.url, "/service-provider/garages/create"):
+            self.create_button.click()
         self.mobile_number.wait_for(state="visible", timeout=15_000)
 
     def _choose(self, combo, option_name: str):

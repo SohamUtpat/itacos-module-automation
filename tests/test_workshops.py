@@ -30,6 +30,101 @@ def _fill_required(workshops: WorkshopsPage, mobile: str, email: str, **override
     )
 
 
+# --- Negative cases (first) — create form reloads in place between these ---
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+def test_workshop_empty_required_rejected(authenticated_page):
+    workshops = WorkshopsPage(authenticated_page)
+    workshops.open()
+    workshops.open_create()
+    workshops.save()
+
+    expect(authenticated_page.get_by_text("Fuel type is Required")).to_be_visible()
+    expect(authenticated_page.get_by_text("Mobile number is required")).to_be_visible()
+    expect(authenticated_page.get_by_text("Landline number is required")).to_be_visible()
+    expect(authenticated_page.get_by_text("Email is required.")).to_be_visible()
+    expect(authenticated_page.get_by_text("Please select at least one day")).to_be_visible()
+    expect(authenticated_page.get_by_text("Country is required")).to_be_visible()
+    expect(authenticated_page.get_by_text("Address is required")).to_be_visible()
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+def test_workshop_alphabets_in_mobile_rejected(authenticated_page):
+    workshops = WorkshopsPage(authenticated_page)
+    workshops.open()
+    workshops.open_create()
+    workshops.mobile_number.fill("abcdefghij")
+    workshops.email.click()
+
+    expect(
+        authenticated_page.get_by_text(
+            "Please enter valid mobile number", exact=True
+        )
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+def test_workshop_invalid_email_rejected(authenticated_page):
+    workshops = WorkshopsPage(authenticated_page)
+    workshops.open()
+    workshops.open_create()
+    workshops.mobile_number.fill(unique_mobile())
+    workshops.email.fill("bad-email")
+    workshops.save()
+
+    expect(
+        authenticated_page.get_by_text("Enter a valid email.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+def test_workshop_invalid_landline_rejected(authenticated_page):
+    workshops = WorkshopsPage(authenticated_page)
+    workshops.open()
+    workshops.open_create()
+    workshops.mobile_number.fill(unique_mobile())
+    workshops.email.fill(unique_email("workshop.ll"))
+    workshops.landline.fill("abcdefgh")
+    workshops.save()
+
+    expect(
+        authenticated_page.get_by_text(
+            "Please enter valid Landline number", exact=True
+        )
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+def test_workshop_no_location_rejected(authenticated_page):
+    workshops = WorkshopsPage(authenticated_page)
+    workshops.open()
+    workshops.open_create()
+    _fill_required(
+        workshops,
+        unique_mobile(),
+        unique_email("workshop.noloc"),
+        location_query=None,
+        pick_location_flag=False,
+    )
+    workshops.save()
+
+    expect(
+        authenticated_page.get_by_text("Country is required", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Address is required", exact=True)
+    ).to_be_visible()
+
+
+# --- Positive / smoke (after negatives) ---
+
+
 @pytest.mark.smoke
 def test_workshops_page_loads(authenticated_page):
     workshops = WorkshopsPage(authenticated_page)
@@ -250,87 +345,3 @@ def test_workshop_confirm_cancel_stays_on_form(authenticated_page):
     expect(authenticated_page).to_have_url(url_is("/service-provider/garages/create"))
     workshops.open()
     expect(workshops.row_by_email(email)).to_have_count(0)
-
-
-@pytest.mark.regression
-def test_workshop_empty_required_rejected(authenticated_page):
-    workshops = WorkshopsPage(authenticated_page)
-    workshops.open()
-    workshops.open_create()
-    workshops.save()
-
-    expect(authenticated_page.get_by_text("Fuel type is Required")).to_be_visible()
-    expect(authenticated_page.get_by_text("Mobile number is required")).to_be_visible()
-    expect(authenticated_page.get_by_text("Landline number is required")).to_be_visible()
-    expect(authenticated_page.get_by_text("Email is required.")).to_be_visible()
-    expect(authenticated_page.get_by_text("Please select at least one day")).to_be_visible()
-    expect(authenticated_page.get_by_text("Country is required")).to_be_visible()
-    expect(authenticated_page.get_by_text("Address is required")).to_be_visible()
-
-
-@pytest.mark.regression
-def test_workshop_alphabets_in_mobile_rejected(authenticated_page):
-    workshops = WorkshopsPage(authenticated_page)
-    workshops.open()
-    workshops.open_create()
-    workshops.mobile_number.fill("abcdefghij")
-    workshops.email.click()
-
-    expect(
-        authenticated_page.get_by_text(
-            "Please enter valid mobile number", exact=True
-        )
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_workshop_invalid_email_rejected(authenticated_page):
-    workshops = WorkshopsPage(authenticated_page)
-    workshops.open()
-    workshops.open_create()
-    workshops.mobile_number.fill(unique_mobile())
-    workshops.email.fill("bad-email")
-    workshops.save()
-
-    expect(
-        authenticated_page.get_by_text("Enter a valid email.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_workshop_invalid_landline_rejected(authenticated_page):
-    workshops = WorkshopsPage(authenticated_page)
-    workshops.open()
-    workshops.open_create()
-    workshops.mobile_number.fill(unique_mobile())
-    workshops.email.fill(unique_email("workshop.ll"))
-    workshops.landline.fill("abcdefgh")
-    workshops.save()
-
-    expect(
-        authenticated_page.get_by_text(
-            "Please enter valid Landline number", exact=True
-        )
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_workshop_no_location_rejected(authenticated_page):
-    workshops = WorkshopsPage(authenticated_page)
-    workshops.open()
-    workshops.open_create()
-    _fill_required(
-        workshops,
-        unique_mobile(),
-        unique_email("workshop.noloc"),
-        location_query=None,
-        pick_location_flag=False,
-    )
-    workshops.save()
-
-    expect(
-        authenticated_page.get_by_text("Country is required", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Address is required", exact=True)
-    ).to_be_visible()

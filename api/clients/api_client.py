@@ -13,3 +13,9 @@ class ApiClient:
 
     def get(self, path):
         return self.request.get(path)
+
+    def put(self, path, payload):
+        return self.request.put(path, data=payload)
+
+    def delete(self, path):
+        return self.request.delete(path)

@@ -18,6 +18,11 @@ with open("test_data/unit_cases.json", "r", encoding="utf-8") as file:
 
 BRANCH = unit_data["default_branch_code"]
 PASSWORD = unit_data["password"]
+LOCATION = unit_data["location_query"]
+LANGUAGE = unit_data["language"]
+GENDER = unit_data["gender"]
+PO_BOX = unit_data["po_box"]
+PROFILE_PHOTO = unit_data["profile_photo"]
 CREATED_MESSAGE = "user created successfully"
 UPDATED_MESSAGE = "ITACO User's Details are Updated Successfully"
 
@@ -26,6 +31,7 @@ UPDATED_MESSAGE = "ITACO User's Details are Updated Successfully"
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_unit_empty_required_rejected(authenticated_page):
     units = UnitsPage(authenticated_page)
     units.open()
@@ -53,6 +59,7 @@ def test_unit_empty_required_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_unit_alphabets_in_phone_rejected(authenticated_page):
     units = UnitsPage(authenticated_page)
     units.open()
@@ -73,6 +80,7 @@ def test_unit_alphabets_in_phone_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_unit_invalid_email_rejected(authenticated_page):
     units = UnitsPage(authenticated_page)
     units.open()
@@ -93,6 +101,7 @@ def test_unit_invalid_email_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_unit_password_mismatch_rejected(authenticated_page):
     units = UnitsPage(authenticated_page)
     units.open()
@@ -114,6 +123,7 @@ def test_unit_password_mismatch_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_unit_weak_password_rejected(authenticated_page):
     units = UnitsPage(authenticated_page)
     units.open()
@@ -183,6 +193,7 @@ def test_unit_create_required_fields(authenticated_page):
 
 @pytest.mark.regression
 def test_unit_create_all_fields(authenticated_page):
+    """Personal Details + Other Details (Language, Gender, location, PO Box, photo)."""
     units = UnitsPage(authenticated_page)
     email = unique_email("unit.all")
     phone = unique_mobile()
@@ -204,8 +215,21 @@ def test_unit_create_all_fields(authenticated_page):
     expect(
         authenticated_page.get_by_text(CREATED_MESSAGE, exact=True).first
     ).to_be_visible(timeout=15_000)
-    units.back()
+    expect(authenticated_page.get_by_role("heading", name="Other Details")).to_be_visible()
 
+    units.fill_other_details(
+        language=LANGUAGE,
+        gender=GENDER,
+        location_query=LOCATION,
+        po_box=PO_BOX,
+        profile_path=PROFILE_PHOTO,
+    )
+    expect(units.submit_button).to_be_enabled()
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text(UPDATED_MESSAGE, exact=True).first
+    ).to_be_visible(timeout=15_000)
     expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
 

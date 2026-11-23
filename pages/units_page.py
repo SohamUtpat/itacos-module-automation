@@ -1,5 +1,8 @@
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout, expect
 
+from helpers.location import pick_location
+from helpers.urls import path_matches
+
 
 class UnitsPage:
 
@@ -18,19 +21,34 @@ class UnitsPage:
         self.country_code_select = page.locator("#mui-component-select-countryCode")
         self.branch_select = page.locator("#mui-component-select-branchId")
         self.language_select = page.locator("#languageCode-selection")
+        self.gender_select = page.locator("#mui-component-select-gender")
+        self.country = page.locator('input[name="country"]')
+        self.area = page.locator('input[name="state"]')
+        self.city = page.locator('input[name="city"]')
+        self.po_box = page.locator('input[name="pOBoxNumber"]')
+        self.address = page.locator('input[name="address"]')
+        self.latitude = page.locator('input[name="latitude"]')
+        self.longitude = page.locator('input[name="longitude"]')
+        self.profile_photo = page.locator('input[name="profilePhotoPath"]')
         self.back_button = page.locator("[data-testid='ArrowBackIcon']")
         self.map_switch = page.locator(".MuiSwitch-root").first
         self.map_switch_input = page.locator(".MuiSwitch-input").first
 
     def open(self):
-        self.page.get_by_role("button", name="Units").click()
+        # Negative chain may already be on Create; list soft-reset may already
+        # be on Units — only use the sidebar when neither is true.
+        if path_matches(self.page.url, "/service-provider/units/create"):
+            return
+        if not path_matches(self.page.url, "/service-provider/units"):
+            self.page.get_by_role("button", name="Units").click()
         self.page.get_by_role("heading", name="Units").wait_for(
             state="visible", timeout=20_000
         )
         self.create_button.wait_for(state="visible", timeout=20_000)
 
     def open_create(self):
-        self.create_button.click()
+        if not path_matches(self.page.url, "/service-provider/units/create"):
+            self.create_button.click()
         self.first_name.wait_for(state="visible", timeout=15_000)
 
     def select_country_code(self, option_text: str = "India"):
@@ -70,6 +88,40 @@ class UnitsPage:
         option = self.page.get_by_role("option", name=name)
         option.wait_for(state="visible", timeout=5_000)
         option.click()
+
+    def select_gender(self, name: str = "MALE"):
+        """Select a Gender option on Other Details (MALE / FEMALE / OTHER)."""
+        self.gender_select.wait_for(state="visible", timeout=10_000)
+        self.gender_select.click()
+        option = self.page.get_by_role("option", name=name, exact=True)
+        option.wait_for(state="visible", timeout=5_000)
+        option.click()
+
+    def pick_location(self, query: str):
+        pick_location(self.page, query, country_locator=self.country)
+
+    def fill_other_details(
+        self,
+        language: str = "English",
+        gender: str = "MALE",
+        location_query: str = "Katraj, Pune",
+        po_box: str = "",
+        profile_path: str | None = None,
+    ):
+        """Fill Other Details after the unit has already been created."""
+        self.page.get_by_role("heading", name="Other Details").wait_for(
+            state="visible", timeout=15_000
+        )
+        if language:
+            self.select_language(language)
+        if gender:
+            self.select_gender(gender)
+        if location_query:
+            self.pick_location(location_query)
+        if po_box:
+            self.po_box.fill(po_box)
+        if profile_path:
+            self.profile_photo.set_input_files(profile_path)
 
     def back(self):
         """Leave the form. After create, this returns to the units list."""

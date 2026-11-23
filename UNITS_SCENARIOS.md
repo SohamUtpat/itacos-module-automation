@@ -45,7 +45,7 @@
 | ID | Title | Steps | Expected |
 |----|--------|-------|----------|
 | TC-U01 | Create with required fields | First Name, Email, Country Code, Phone, Password, Confirm, Branch → Submit → Back | Toast **user created successfully**. Other Details opens with Submit disabled. Back shows the new email row |
-| TC-U02 | Create with all fields | Required + Last Name → Submit → Back | Toast **user created successfully** and the row is visible |
+| TC-U02 | Create with all fields | Required + Last Name → Submit → Other Details (Language, Gender, Location, PO Box, Profile) → Submit | Toast **user created successfully**, then **ITACO User's Details are Updated Successfully**; row visible on list |
 | TC-U07 | Create shows row details | Create unit → Back → inspect row | Toast **user created successfully**. Code is visible with the email |
 | TC-U15 | Update from Other Details | Create → set Language = English → Submit | Toast **ITACO User's Details are Updated Successfully**. Same email row is on the list |
 | TC-U08 | Edit unit | Create → Edit → change First Name → Submit | Updated name visible in grid |

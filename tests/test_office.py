@@ -35,6 +35,7 @@ def _unique_office_required(data: dict) -> dict:
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_empty_company_name_shows_error(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()
@@ -47,6 +48,7 @@ def test_office_empty_company_name_shows_error(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_alphabets_in_mobile_rejected(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()
@@ -59,6 +61,7 @@ def test_office_alphabets_in_mobile_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_invalid_email_rejected(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()
@@ -71,6 +74,7 @@ def test_office_invalid_email_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_empty_short_name_shows_error(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()
@@ -83,6 +87,7 @@ def test_office_empty_short_name_shows_error(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_empty_email_shows_error(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()
@@ -95,6 +100,7 @@ def test_office_empty_email_shows_error(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_empty_mobile_shows_error(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()
@@ -107,6 +113,7 @@ def test_office_empty_mobile_shows_error(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_office_invalid_landline_rejected(authenticated_page):
     office = OfficePage(authenticated_page)
     office.open()

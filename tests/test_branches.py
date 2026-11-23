@@ -25,6 +25,7 @@ def _expect_toast(page, message) -> None:
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_branch_empty_required_rejected(authenticated_page):
     branches = BranchesPage(authenticated_page)
     branches.open()
@@ -38,6 +39,7 @@ def test_branch_empty_required_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_branch_alphabets_in_mobile_rejected(authenticated_page):
     branches = BranchesPage(authenticated_page)
     branches.open()
@@ -54,6 +56,7 @@ def test_branch_alphabets_in_mobile_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_branch_invalid_email_rejected(authenticated_page):
     branches = BranchesPage(authenticated_page)
     branches.open()
@@ -68,6 +71,7 @@ def test_branch_invalid_email_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_branch_invalid_landline_rejected(authenticated_page):
     branches = BranchesPage(authenticated_page)
     branches.open()
@@ -85,6 +89,7 @@ def test_branch_invalid_landline_rejected(authenticated_page):
 
 
 @pytest.mark.regression
+@pytest.mark.negative
 def test_branch_no_location_rejected(authenticated_page):
     branches = BranchesPage(authenticated_page)
     branches.open()

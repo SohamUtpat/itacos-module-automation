@@ -1,0 +1,14 @@
+{
+  "create_success_message": "ITACO User Created Successfully",
+  "update_success_message": "ITACO User's Details are Updated Successfully",
+  "list_success_message": "All Service Units Fetched Successfully",
+  "delete_success_message": "Service Unit Is Deactivated",
+  "role": "Service Provider Unit",
+  "department": "Service Providers",
+  "user_type": "SERVICE_PROVIDER",
+  "user_status": "ACTIVE",
+  "unit_status": "ACTIVE",
+  "default_branch_code": "SP-B008",
+  "password": "Unit@12345",
+  "country_code": "+91"
+}

@@ -1,6 +1,7 @@
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout, expect
 
 from helpers.location import pick_location
+from helpers.urls import path_matches
 
 
 DEFAULT_WORKING_DAYS = [
@@ -37,7 +38,10 @@ class BranchesPage:
 
     def open(self):
         """Open Branches list; reload once if Create Branch never appears."""
-        self.page.get_by_role("button", name="Office Branches").click()
+        if path_matches(self.page.url, "/service-provider/branches/create"):
+            return
+        if not path_matches(self.page.url, "/service-provider/branches"):
+            self.page.get_by_role("button", name="Office Branches").click()
         self.page.get_by_role("heading", name="Branches").wait_for(
             state="visible", timeout=20_000
         )
@@ -60,7 +64,8 @@ class BranchesPage:
             pass
 
     def open_create(self):
-        self.create_button.click()
+        if not path_matches(self.page.url, "/service-provider/branches/create"):
+            self.create_button.click()
         self.mobile_number.wait_for(state="visible", timeout=15_000)
 
     def select_working_days(self, days: list[str] | None = None):

@@ -2,7 +2,7 @@
 
 Playwright + Pytest automation for the Assist Me / Itacos UAT app, focused on **Provider Office Admin** flows.
 
-UI tests live in `tests/`. Login API tests live in `api/`. The two suites share Pytest, Playwright, `.env`, and pytest-html, and they are run separately.
+UI tests live in `tests/`. Login and Units API tests live in `api/`. The two suites share Pytest, Playwright, `.env`, and pytest-html, and they are run separately.
 
 - Login
 - Office Details
@@ -46,15 +46,21 @@ UI tests live in `tests/`. Login API tests live in `api/`. The two suites share 
 ├── helpers/            # Shared helpers (URLs, unique data, location)
 ├── test_data/          # JSON test data
 ├── reports/            # HTML report, screenshots, traces
-├── conftest.py         # UI auth fixtures, failure screenshots
-├── api/                # Login API automation
+├── conftest.py         # UI auth, soft/hard page reset, failure screenshots
+├── api/                # Login + Units API automation
 │   ├── clients/api_client.py
 │   ├── endpoints/auth_endpoints.py
+│   ├── endpoints/unit_endpoints.py
 │   ├── helpers/checks.py
 │   ├── tests/test_login_api.py
+│   ├── tests/test_units_api.py
 │   ├── LOGIN_API_SCENARIOS.md
+│   ├── UNITS_API_SCENARIOS.md
 │   ├── test_data/login_data.json
+│   ├── test_data/unit_data.json
 │   ├── schemas/login_response_schema.json
+│   ├── schemas/unit_create_response_schema.json
+│   ├── schemas/unit_list_response_schema.json
 │   └── conftest.py
 ├── pytest.ini          # Markers, report defaults
 ├── requirements.txt
@@ -103,11 +109,13 @@ API_USERNAME=your_test_username
 API_PASSWORD=your_test_password
 API_MOBILE=your_mobile_number
 API_MAX_RESPONSE_MS=5000
+API_BRANCH_CODE=SP-B008
+API_UNIT_PASSWORD=Unit@12345
 ```
 
 Copy `.env.example` if you want the same placeholders. `.env` is listed in `.gitignore`. Do not commit usernames, passwords, or tokens.
 
-If `API_USERNAME` / `API_PASSWORD` are empty, the login API tests use `LOGIN_EMAIL_OR_MOBILE` and `LOGIN_PASSWORD`. `API_BASE_URL` falls back to the host of `BASE_URL`.
+If `API_USERNAME` / `API_PASSWORD` are empty, the login API tests use `LOGIN_EMAIL_OR_MOBILE` and `LOGIN_PASSWORD`. `API_BASE_URL` falls back to the host of `BASE_URL`. Units API tests use `API_BRANCH_CODE` (default `SP-B008`) and `API_UNIT_PASSWORD` (default `Unit@12345`).
 
 ---
 
@@ -123,6 +131,12 @@ python -m pytest tests/ -v
 
 ```powershell
 python -m pytest api/tests/test_login_api.py -v
+```
+
+### Units API tests
+
+```powershell
+python -m pytest api/tests/test_units_api.py -v
 ```
 
 ### All UI and API tests
@@ -191,13 +205,28 @@ The login API suite calls the confirmed UAT endpoint:
 
 Request fields are `userName`, `password`, `appType` (`WEB`), and `forceLogin` (`true`). A successful login returns HTTP 201 and `Login Successfully`. The token is at `data.loginAudit.token`. The user object is `data.loginAudit.userBasicDetails` (this is the live field name).
 
-Office, unit, branch, and workshop APIs are not automated yet. Their URLs have not been confirmed.
-
 ### Bearer token
 
-`authenticated_api` in `api/conftest.py` logs in once per pytest session, reads `data.loginAudit.token`, and creates a second Playwright request context with `Authorization: Bearer <token>`. The token is not printed and is disposed of when the session ends. Negative login tests use `api_client` and do not need that token.
+`authenticated_api` in `api/conftest.py` logs in once per pytest session, reads `data.loginAudit.token`, and creates a second Playwright request context with `Authorization: Bearer <token>`, plus `x-tenant-id` and `user-id` from the same login response. The token is not printed and is disposed of when the session ends. Negative login tests use `api_client` and do not need that token.
 
-No protected resource URL has been confirmed yet, so expired, modified, and missing tokens are not called against another endpoint. The login request itself is public.
+Unit and admin-service calls need `x-tenant-id`. The login request itself is public.
+
+---
+
+## Units API
+
+The units API suite covers the confirmed UAT endpoints for Service Provider Units:
+
+| Action | Method / path |
+|--------|----------------|
+| Create | `POST /user-management-service/v1/user/itaco-user` |
+| Update | `PUT /user-management-service/v1/user/itaco-user/{id}` |
+| List / search | `GET /admin-service/v1/provider-units` |
+| Delete (deactivate) | `DELETE /admin-service/v1/provider-unit/{id}` |
+
+Create returns HTTP 201 and `ITACO User Created Successfully`. List returns `All Service Units Fetched Successfully`. Delete soft-deactivates with `Service Unit Is Deactivated`. Full cases: [api/UNITS_API_SCENARIOS.md](api/UNITS_API_SCENARIOS.md).
+
+Office, branch, and workshop APIs beyond the unit prerequisites are not automated yet.
 
 ### Login API coverage
 
@@ -253,6 +282,7 @@ Full conventions: [APPROACH.md](APPROACH.md)
 |--------|-----|
 | Login | [LOGIN_SCENARIOS.md](LOGIN_SCENARIOS.md) |
 | Login API | [api/LOGIN_API_SCENARIOS.md](api/LOGIN_API_SCENARIOS.md) |
+| Units API | [api/UNITS_API_SCENARIOS.md](api/UNITS_API_SCENARIOS.md) |
 | Office | [OFFICE_SCENARIOS.md](OFFICE_SCENARIOS.md) |
 | Branches | [BRANCHES_SCENARIOS.md](BRANCHES_SCENARIOS.md) |
 | Units | [UNITS_SCENARIOS.md](UNITS_SCENARIOS.md) |
