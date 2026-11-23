@@ -44,11 +44,11 @@
 
 | ID | Title | Steps | Expected |
 |----|--------|-------|----------|
-| TC-O01 | Save with required fields | Fill Company Name, Short Name, Mobile, Email, location → Save | Form stays populated; office saved |
-| TC-O02 | Save with all fields | Required + Landline + Comments → Save | Values persist on form |
-| TC-O06 | Save persists after reload | Save required → reload page | Company Name / Short Name still populated |
-| TC-O07 | Update existing office comments | Change Comments → Save | Updated comments remain |
-| TC-O08 | Save Bank Details | Fill Account Number, IBAN, Branch → Save | Bank fields persist |
+| TC-O01 | Save with required fields | Fill Company Name, Short Name, Mobile, Email, location → Save | Toast **Service Provider Office Details are Updated Successfully**; form stays populated |
+| TC-O02 | Save with all fields | Required + Landline + Comments → Save | Toast **Service Provider Office Details are Updated Successfully**; values persist on form |
+| TC-O06 | Save persists after reload | Save required → reload page | Toast on save; Company Name / Short Name still populated after reload |
+| TC-O07 | Update existing office comments | Change Comments → Save | Toast **Service Provider Office Details are Updated Successfully**; comments remain |
+| TC-O08 | Save Bank Details | Fill Account Number, IBAN, Branch → Save | Toast **Service Provider Office Details are Updated Successfully**; bank fields persist |
 | TC-O09 | Active Hours section usable | Open Active Hours → toggle Saturday | Section visible; day checkbox state changes |
 | TC-O10 | Network Type / Currency visible | Open Office Details | Network Type + Currency comboboxes visible; Payable Days shown |
 | TC-O11 | View History | Click View History | History dialog / panel opens |

@@ -44,14 +44,14 @@
 
 | ID | Title | Steps | Expected |
 |----|--------|-------|----------|
-| TC-B01 | Create with required fields | Create Branch → Mobile, Email, Landline, Select Days, location → Save | Redirect to list; email row visible |
-| TC-B02 | Create with all fields | Required + Alt mobile, WhatsApp, Teams ID, PO Box → Save | Row visible in grid |
-| TC-B06 | Create shows row details | Create branch → inspect row | City / Contact / Status (Active) visible |
-| TC-B07 | Edit branch | Create → Edit → change mobile → Save | Updated mobile shown in grid |
-| TC-B08 | Delete branch | Create → Delete → Confirm | Row no longer visible |
+| TC-B01 | Create with required fields | Create Branch → Mobile, Email, Landline, Select Days, location → Save | Toast **Branch is created for Service Provider**; redirect to list; email row visible |
+| TC-B02 | Create with all fields | Required + Alt mobile, WhatsApp, Teams ID, PO Box → Save | Toast **Branch is created for Service Provider**; row visible in grid |
+| TC-B06 | Create shows row details | Create branch → inspect row | Toast **Branch is created for Service Provider**; City / Contact / Status (Active) visible |
+| TC-B07 | Edit branch | Create → Edit → change mobile → Save | Create toast, then toast **Branch is updated for Service Provider**; updated mobile in grid |
+| TC-B08 | Delete branch | Create → Delete → Confirm | Create toast, then toast **Branch Deleted Successfully**; row no longer visible |
 | TC-B09 | Map view toggle | Toggle Map view switch | Switch checked; map area or alternate view shown |
 | TC-B10 | Reset on create | Open create → fill mobile → Reset | Mobile cleared / restored empty |
-| TC-B11 | Working days custom (Mon–Wed) | Create with Mon–Wed only + 24 Hours → Save | Branch created; row visible |
+| TC-B11 | Working days custom (Mon–Wed) | Create with Mon–Wed only + 24 Hours → Save | Toast **Branch is created for Service Provider**; row visible |
 | TC-B12 | Confirm Cancel on create | Valid form → Save → Cancel on confirm | Stay on create form; no new row |
 
 ---
