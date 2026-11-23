@@ -12,6 +12,13 @@ with open("test_data/branch_cases.json", "r", encoding="utf-8") as file:
     branch_data = json.load(file)
 
 LOCATION = branch_data["location_query"]
+CREATED_MESSAGE = branch_data["created_message"]
+UPDATED_MESSAGE = branch_data["updated_message"]
+DELETED_MESSAGE = re.compile(r"Branch [Dd]eleted [Ss]uccessfully")
+
+
+def _expect_toast(page, message) -> None:
+    expect(page.get_by_text(message, exact=True).first).to_be_visible(timeout=15_000)
 
 
 # --- Negative cases (first) ---
@@ -132,6 +139,7 @@ def test_branch_create_required_fields(authenticated_page):
         landline="21234567",
     )
     branches.save()
+    _expect_toast(authenticated_page, CREATED_MESSAGE)
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/branches"), timeout=20_000)
     expect(branches.row_by_email(email)).to_be_visible(timeout=15_000)
@@ -156,6 +164,7 @@ def test_branch_create_all_fields(authenticated_page):
         po_box="411046",
     )
     branches.save()
+    _expect_toast(authenticated_page, CREATED_MESSAGE)
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/branches"), timeout=20_000)
     expect(branches.row_by_email(email)).to_be_visible(timeout=15_000)
@@ -173,6 +182,7 @@ def test_branch_create_shows_row_details(authenticated_page):
         mobile=mobile, email=email, location_query=LOCATION, landline="21234567"
     )
     branches.save()
+    _expect_toast(authenticated_page, CREATED_MESSAGE)
 
     row = branches.row_containing(email)
     expect(row).to_be_visible(timeout=15_000)
@@ -194,6 +204,7 @@ def test_branch_edit_updates_mobile(authenticated_page):
         mobile=mobile, email=email, location_query=LOCATION, landline="21234567"
     )
     branches.save()
+    _expect_toast(authenticated_page, CREATED_MESSAGE)
     expect(branches.row_by_email(email)).to_be_visible(timeout=15_000)
 
     branches.edit_row_by_email(email)
@@ -209,6 +220,7 @@ def test_branch_edit_updates_mobile(authenticated_page):
     if not (branches.country.input_value() or "").strip():
         branches.pick_location(LOCATION)
     branches.save()
+    _expect_toast(authenticated_page, UPDATED_MESSAGE)
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/branches"), timeout=20_000)
     row = branches.row_containing(email)
@@ -227,6 +239,7 @@ def test_branch_delete_removes_row(authenticated_page):
         mobile=mobile, email=email, location_query=LOCATION, landline="21234567"
     )
     branches.save()
+    _expect_toast(authenticated_page, CREATED_MESSAGE)
     expect(authenticated_page).to_have_url(url_is("/service-provider/branches"), timeout=20_000)
     expect(branches.row_by_email(email)).to_be_visible(timeout=15_000)
     branch_code = branches.code_from_email_row(email)
@@ -235,6 +248,9 @@ def test_branch_delete_removes_row(authenticated_page):
     branches.delete_row_by_email(email)
     expect(authenticated_page.get_by_text("Are you sure", exact=False)).to_be_visible()
     branches.confirm_dialog()
+    expect(authenticated_page.get_by_text(DELETED_MESSAGE).first).to_be_visible(
+        timeout=15_000
+    )
 
     expect(branches.row_by_email(email)).to_have_count(0, timeout=15_000)
     expect(branches.row_by_code(branch_code)).to_have_count(0, timeout=15_000)
@@ -279,6 +295,7 @@ def test_branch_create_custom_working_days(authenticated_page):
         days=["MONDAY", "TUESDAY", "WEDNESDAY"],
     )
     branches.save()
+    _expect_toast(authenticated_page, CREATED_MESSAGE)
 
     expect(branches.row_by_email(email)).to_be_visible(timeout=15_000)
 

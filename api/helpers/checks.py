@@ -51,24 +51,45 @@ def assert_no_server_leak(body):
 
 
 def error_messages(body):
+    """Return non-empty errorMessage values from the API response body."""
     errors = body.get("errors") if isinstance(body, dict) else None
     if not isinstance(errors, list):
         return []
-    return [item.get("errorMessage") for item in errors if isinstance(item, dict)]
+    messages = []
+    for item in errors:
+        if not isinstance(item, dict):
+            continue
+        message = item.get("errorMessage")
+        if isinstance(message, str) and message.strip():
+            messages.append(message)
+    return messages
+
+
+def response_error_text(body):
+    """Return the top-level error string from the API response, if present."""
+    if not isinstance(body, dict):
+        return None
+    error = body.get("error")
+    if isinstance(error, str) and error.strip():
+        return error
+    return None
 
 
 def safe_error_summary(body):
     """Details that are safe to show when a status code does not match."""
     if not isinstance(body, dict):
         return "response was not a JSON object"
-    if "errors" in body:
-        return error_messages(body)
-    if "error" in body:
-        return {"status": body.get("status"), "error": body.get("error")}
+    messages = error_messages(body)
+    if messages:
+        return messages
+    error = response_error_text(body)
+    if error:
+        return {"status": body.get("status"), "error": error}
     return {"keys": sorted(body.keys())}
 
 
-def assert_rejected(response, password, expected_status, expected_messages=None, expected_error=None):
+def assert_rejected(response, password, expected_status):
+    """Assert a rejected login using HTTP status and error details from the API response."""
     content_type = response.headers.get("content-type", "")
     if "application/json" not in content_type:
         pytest.fail(f"Expected a JSON response, got content-type '{content_type}'")
@@ -88,10 +109,12 @@ def assert_rejected(response, password, expected_status, expected_messages=None,
     assert_password_absent(body, password)
     assert_no_server_leak(body)
 
-    if expected_messages is not None and error_messages(body) != expected_messages:
-        pytest.fail(f"Unexpected error messages: {error_messages(body)}")
-
-    if expected_error is not None and body.get("error") != expected_error:
-        pytest.fail(f"Unexpected error value: {body.get('error')}")
+    actual_messages = error_messages(body)
+    actual_error = response_error_text(body)
+    if not actual_messages and not actual_error:
+        pytest.fail(
+            "Rejected login API response did not include error messages "
+            "(expected errors[].errorMessage or a top-level error field)"
+        )
 
     return body

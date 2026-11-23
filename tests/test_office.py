@@ -10,6 +10,14 @@ from pages.office_page import OfficePage
 with open("test_data/office_cases.json", "r", encoding="utf-8") as file:
     office_data = json.load(file)
 
+UPDATED_MESSAGE = office_data["updated_message"]
+
+
+def _expect_updated_toast(page) -> None:
+    expect(page.get_by_text(UPDATED_MESSAGE, exact=True).first).to_be_visible(
+        timeout=15_000
+    )
+
 
 def _unique_office_required(data: dict) -> dict:
     """Build required office values that differ each run so Save is a real update."""
@@ -146,6 +154,7 @@ def test_office_save_required_fields(authenticated_page):
         location_query=data["location_query"],
     )
     office.save()
+    _expect_updated_toast(authenticated_page)
 
     expect(office.company_name).to_have_value(data["company_name"])
     expect(office.short_name).to_have_value(data["short_name"])
@@ -174,6 +183,7 @@ def test_office_save_all_fields(authenticated_page):
     )
     office.fill_optional(landline=landline, comments=comments)
     office.save()
+    _expect_updated_toast(authenticated_page)
 
     expect(office.company_name).to_have_value(data["company_name"])
     expect(office.mobile_number).to_have_value(data["mobile"])
@@ -195,6 +205,7 @@ def test_office_save_persists_after_reload(authenticated_page):
         location_query=data["location_query"],
     )
     office.save()
+    _expect_updated_toast(authenticated_page)
     office.reload()
 
     expect(office.company_name).to_have_value(data["company_name"])
@@ -211,6 +222,7 @@ def test_office_update_comments_and_save(authenticated_page):
     office.open()
     office.comments.fill(comments)
     office.save()
+    _expect_updated_toast(authenticated_page)
     office.reload()
 
     expect(office.comments).to_have_value(comments)
@@ -230,6 +242,7 @@ def test_office_save_bank_details(authenticated_page):
         branch=bank["branch"],
     )
     office.save()
+    _expect_updated_toast(authenticated_page)
 
     expect(office.account_number).to_have_value(account_number)
     expect(office.iban_code).to_have_value(bank["iban_code"])

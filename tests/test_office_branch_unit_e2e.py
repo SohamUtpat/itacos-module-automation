@@ -8,6 +8,7 @@ from helpers.unique import (
     unique_first_name,
     unique_last_name,
     unique_mobile,
+    unique_suffix,
 )
 from helpers.urls import url_is
 from pages.branches_page import BranchesPage
@@ -49,7 +50,14 @@ def test_office_branch_unit_happy_path(authenticated_page):
         email=office_case["email"],
         location_query=office_case["location_query"],
     )
+    # Unique comments so Save is a real update and the success toast appears
+    office.comments.fill(f"E2E office ready {unique_suffix()}")
     office.save()
+    expect(
+        authenticated_page.get_by_text(
+            "Service Provider Office Details are Updated Successfully", exact=True
+        ).first
+    ).to_be_visible(timeout=15_000)
     expect(office.company_name).to_have_value(office_case["company_name"])
 
     # 2) Create branch with required fields
@@ -63,6 +71,11 @@ def test_office_branch_unit_happy_path(authenticated_page):
         landline="21234567",
     )
     branches.save()
+    expect(
+        authenticated_page.get_by_text(
+            "Branch is created for Service Provider", exact=True
+        ).first
+    ).to_be_visible(timeout=15_000)
     expect(authenticated_page).to_have_url(url_is("/service-provider/branches"), timeout=20_000)
     expect(branches.row_by_email(branch_email)).to_be_visible(timeout=15_000)
 
@@ -117,6 +130,11 @@ def test_branch_unit_edit_then_search(authenticated_page):
         landline="21234567",
     )
     branches.save()
+    expect(
+        authenticated_page.get_by_text(
+            "Branch is created for Service Provider", exact=True
+        ).first
+    ).to_be_visible(timeout=15_000)
     expect(branches.row_by_email(branch_email)).to_be_visible(timeout=15_000)
 
     branch_code = (
