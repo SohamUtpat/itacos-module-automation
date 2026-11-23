@@ -5,16 +5,30 @@
 **Update:** `/service-provider/users/update/{id}`  
 **Depends on:** at least one Branch (e.g. SP-B008)  
 
+**Run order:** Negative cases first, then smoke / positive.
+
 ---
 
 ## Summary
 
 | Type | Count | IDs |
 |------|-------|-----|
+| Negative | 5 | TC-U03 – TC-U06, TC-U17 |
 | Smoke | 1 | TC-U-SMOKE |
-| Happy / Positive | 11 | TC-U01 – TC-U02, TC-U07 – TC-U15 |
-| Negative | 7 | TC-U03 – TC-U06, TC-U16 – TC-U18 |
+| Happy / Positive | 12 | TC-U01 – TC-U02, TC-U07 – TC-U16 |
 | E2E happy path | 3 | TC-E2E-01 – TC-E2E-03 |
+
+---
+
+## Negative
+
+| ID | Title | Steps | Expected |
+|----|--------|-------|----------|
+| TC-U03 | Empty required | Open create → Submit empty | Errors: First Name / Email / Country code / Phone / Password / Confirm password is required. |
+| TC-U04 | Alphabets in phone | Phone = letters → Submit | Error: Enter a valid phone number. |
+| TC-U05 | Invalid email | Email = `not-an-email` → Submit | Error: Enter a valid email. |
+| TC-U06 | Password mismatch | Confirm Password different → Submit | Error: Passwords do not match. |
+| TC-U17 | Weak / short password | Password = `123` → Submit | Password validation error (if enforced) |
 
 ---
 
@@ -41,19 +55,7 @@
 | TC-U12 | Map view toggle | Toggle Map view | Switch checked |
 | TC-U13 | Reset on create | Open create → fill First Name → Reset | First Name cleared |
 | TC-U14 | Delete Cancel | Create → Delete → Cancel | Row still visible |
-
----
-
-## Negative
-
-| ID | Title | Steps | Expected |
-|----|--------|-------|----------|
-| TC-U03 | Empty required | Open create → Submit empty | Errors: First Name / Email / Country code / Phone / Password / Confirm password is required. |
-| TC-U04 | Alphabets in phone | Phone = letters → Submit | Error: Enter a valid phone number. |
-| TC-U05 | Invalid email | Email = `not-an-email` → Submit | Error: Enter a valid email. |
-| TC-U06 | Password mismatch | Confirm Password different → Submit | Error: Passwords do not match. |
-| TC-U16 | No branch selected | Fill personal fields, skip Branch → Submit | Branch required error (if shown) |
-| TC-U17 | Weak / short password | Password = `123` → Submit | Password validation error (if enforced) |
+| TC-U16 | Create without branch | Fill personal fields, skip Branch → Submit → Back | Toast **user created successfully**; email row visible (branch is optional) |
 
 ---
 

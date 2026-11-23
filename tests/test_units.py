@@ -22,6 +22,117 @@ CREATED_MESSAGE = "user created successfully"
 UPDATED_MESSAGE = "ITACO User's Details are Updated Successfully"
 
 
+# --- Negative cases (first) ---
+
+
+@pytest.mark.regression
+def test_unit_empty_required_rejected(authenticated_page):
+    units = UnitsPage(authenticated_page)
+    units.open()
+    units.open_create()
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text("First Name is required.", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Email is required.", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Country code is required.", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Phone number is required.", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Password is required.", exact=True)
+    ).to_be_visible()
+    expect(
+        authenticated_page.get_by_text("Confirm password is required.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_unit_alphabets_in_phone_rejected(authenticated_page):
+    units = UnitsPage(authenticated_page)
+    units.open()
+    units.open_create()
+    units.fill_required(
+        first_name=unique_first_name(),
+        last_name=unique_last_name(),
+        email=unique_email("unit.phone"),
+        phone="abcdefghij",
+        password=PASSWORD,
+        branch_code=BRANCH,
+    )
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text("Enter a valid phone number.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_unit_invalid_email_rejected(authenticated_page):
+    units = UnitsPage(authenticated_page)
+    units.open()
+    units.open_create()
+    units.fill_required(
+        first_name=unique_first_name(),
+        last_name=unique_last_name(),
+        email="not-an-email",
+        phone=unique_mobile(),
+        password=PASSWORD,
+        branch_code=BRANCH,
+    )
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text("Enter a valid email.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_unit_password_mismatch_rejected(authenticated_page):
+    units = UnitsPage(authenticated_page)
+    units.open()
+    units.open_create()
+    units.fill_required(
+        first_name=unique_first_name(),
+        last_name=unique_last_name(),
+        email=unique_email("unit.mismatch"),
+        phone=unique_mobile(),
+        password=PASSWORD,
+        confirm_password="Different@123",
+        branch_code=BRANCH,
+    )
+    units.submit()
+
+    expect(
+        authenticated_page.get_by_text("Passwords do not match.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_unit_weak_password_rejected(authenticated_page):
+    units = UnitsPage(authenticated_page)
+    units.open()
+    units.open_create()
+    units.password.fill("123")
+    # Blur password so field-level validation appears
+    units.confirm_password.click()
+
+    expect(
+        authenticated_page.get_by_text(
+            "Password should be of min 8 characters length.",
+            exact=True,
+        )
+    ).to_be_visible()
+
+
+# --- Positive / smoke (after negatives) ---
+
+
 @pytest.mark.smoke
 def test_units_page_loads(authenticated_page):
     units = UnitsPage(authenticated_page)
@@ -316,94 +427,6 @@ def test_unit_delete_cancel_keeps_row(authenticated_page):
 
 
 @pytest.mark.regression
-def test_unit_empty_required_rejected(authenticated_page):
-    units = UnitsPage(authenticated_page)
-    units.open()
-    units.open_create()
-    units.submit()
-
-    expect(
-        authenticated_page.get_by_text("First Name is required.", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Email is required.", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Country code is required.", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Phone number is required.", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Password is required.", exact=True)
-    ).to_be_visible()
-    expect(
-        authenticated_page.get_by_text("Confirm password is required.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_unit_alphabets_in_phone_rejected(authenticated_page):
-    units = UnitsPage(authenticated_page)
-    units.open()
-    units.open_create()
-    units.fill_required(
-        first_name=unique_first_name(),
-        last_name=unique_last_name(),
-        email=unique_email("unit.phone"),
-        phone="abcdefghij",
-        password=PASSWORD,
-        branch_code=BRANCH,
-    )
-    units.submit()
-
-    expect(
-        authenticated_page.get_by_text("Enter a valid phone number.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_unit_invalid_email_rejected(authenticated_page):
-    units = UnitsPage(authenticated_page)
-    units.open()
-    units.open_create()
-    units.fill_required(
-        first_name=unique_first_name(),
-        last_name=unique_last_name(),
-        email="not-an-email",
-        phone=unique_mobile(),
-        password=PASSWORD,
-        branch_code=BRANCH,
-    )
-    units.submit()
-
-    expect(
-        authenticated_page.get_by_text("Enter a valid email.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_unit_password_mismatch_rejected(authenticated_page):
-    units = UnitsPage(authenticated_page)
-    units.open()
-    units.open_create()
-    units.fill_required(
-        first_name=unique_first_name(),
-        last_name=unique_last_name(),
-        email=unique_email("unit.mismatch"),
-        phone=unique_mobile(),
-        password=PASSWORD,
-        confirm_password="Different@123",
-        branch_code=BRANCH,
-    )
-    units.submit()
-
-    expect(
-        authenticated_page.get_by_text("Passwords do not match.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
 def test_unit_create_without_branch_shows_row(authenticated_page):
     """Branch is optional. The first Submit still creates the unit."""
     units = UnitsPage(authenticated_page)
@@ -428,21 +451,3 @@ def test_unit_create_without_branch_shows_row(authenticated_page):
 
     expect(authenticated_page).to_have_url(url_is("/service-provider/units"), timeout=20_000)
     expect(units.row_by_email(email)).to_be_visible(timeout=15_000)
-
-
-@pytest.mark.regression
-def test_unit_weak_password_rejected(authenticated_page):
-    units = UnitsPage(authenticated_page)
-    units.open()
-    units.open_create()
-    units.password.fill("123")
-    # Blur password so field-level validation appears
-    units.confirm_password.click()
-
-    expect(
-        authenticated_page.get_by_text(
-            "Password should be of min 8 characters length.",
-            exact=True,
-        )
-    ).to_be_visible()
-

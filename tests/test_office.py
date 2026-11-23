@@ -23,6 +23,99 @@ def _unique_office_required(data: dict) -> dict:
     }
 
 
+# --- Negative cases (first) ---
+
+
+@pytest.mark.regression
+def test_office_empty_company_name_shows_error(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.company_name.fill("")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text("Company name is required", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_office_alphabets_in_mobile_rejected(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.mobile_number.fill("abcdefghij")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text("Please enter valid mobile number", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_office_invalid_email_rejected(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.email.fill("not-an-email")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text("Enter a valid email.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_office_empty_short_name_shows_error(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.short_name.fill("")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text("Short name is required", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_office_empty_email_shows_error(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.email.fill("")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text("Email is required.", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_office_empty_mobile_shows_error(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.mobile_number.fill("")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text("Mobile number is required", exact=True)
+    ).to_be_visible()
+
+
+@pytest.mark.regression
+def test_office_invalid_landline_rejected(authenticated_page):
+    office = OfficePage(authenticated_page)
+    office.open()
+    office.landline.fill("abcdefghi")
+    office.save()
+
+    expect(
+        authenticated_page.get_by_text(
+            "Please enter valid Landline number",
+            exact=True,
+        )
+    ).to_be_visible()
+
+
+# --- Positive / smoke (after negatives) ---
+
+
 @pytest.mark.smoke
 def test_office_details_page_loads(authenticated_page):
     office = OfficePage(authenticated_page)
@@ -207,90 +300,3 @@ def test_office_reset_restores_unsaved_comments(authenticated_page):
     office.reset()
 
     expect(office.comments).to_have_value(original)
-
-
-@pytest.mark.regression
-def test_office_empty_company_name_shows_error(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.company_name.fill("")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text("Company name is required", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_office_alphabets_in_mobile_rejected(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.mobile_number.fill("abcdefghij")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text("Please enter valid mobile number", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_office_invalid_email_rejected(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.email.fill("not-an-email")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text("Enter a valid email.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_office_empty_short_name_shows_error(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.short_name.fill("")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text("Short name is required", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_office_empty_email_shows_error(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.email.fill("")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text("Email is required.", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_office_empty_mobile_shows_error(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.mobile_number.fill("")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text("Mobile number is required", exact=True)
-    ).to_be_visible()
-
-
-@pytest.mark.regression
-def test_office_invalid_landline_rejected(authenticated_page):
-    office = OfficePage(authenticated_page)
-    office.open()
-    office.landline.fill("abcdefghi")
-    office.save()
-
-    expect(
-        authenticated_page.get_by_text(
-            "Please enter valid Landline number",
-            exact=True,
-        )
-    ).to_be_visible()
